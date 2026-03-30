@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="267" height="28" role="img" aria-label="Stack: Spring Boot · FastAPI · React">
+  <linearGradient id="g" x2="0" y2="100%">
+    <stop offset="0" stop-color="#fff" stop-opacity=".08"/>
+    <stop offset="1" stop-opacity=".08"/>
+  </linearGradient>
+  <rect rx="14" width="267" height="28" fill="#e5e7eb"/>
+  <rect rx="14" width="52" height="28" fill="#1D4ED8"/>
+  <rect rx="14" x="52" width="215" height="28" fill="#1E3A8A"/>
+  <path fill="#1E3A8A" d="M52 0h14v28h-14z"/>
+  <rect rx="14" width="267" height="28" fill="url(#g)"/>
+  <g fill="#fff" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif" font-size="13" text-anchor="middle">
+    <text x="26.0" y="19">Stack</text>
+    <text x="159.5" y="19">Spring Boot · FastAPI · React</text>
+  </g>
+</svg>

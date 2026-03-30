@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="620" viewBox="0 0 1400 620" fill="none">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1400" y2="620" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#EFF6FF"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="1400" height="620" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="20" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <rect width="1400" height="620" rx="28" fill="url(#bg2)"/>
+  <text x="70" y="74" font-size="34" font-weight="700" fill="#0F172A" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">Specyn Architecture Overview</text>
+  <text x="70" y="112" font-size="20" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">사용자 입력부터 Agent 실행, 산출물 생성, 검증까지의 흐름을 한눈에 정리했습니다.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="170" width="290" height="120" rx="22" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="104" y="216" font-size="28" font-weight="700" fill="#0F172A" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">사용자 / 팀</text>
+    <text x="104" y="252" font-size="20" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• Spec 작성</text>
+    <text x="104" y="282" font-size="20" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• 실행 요청</text>
+
+    <rect x="420" y="110" width="330" height="150" rx="22" fill="#FFFFFF" stroke="#93C5FD"/>
+    <text x="454" y="156" font-size="28" font-weight="700" fill="#1D4ED8" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">React UI</text>
+    <text x="454" y="192" font-size="20" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• Spec 편집</text>
+    <text x="454" y="222" font-size="20" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• 실행 상태 / 결과 요약</text>
+
+    <rect x="420" y="300" width="330" height="150" rx="22" fill="#FFFFFF" stroke="#60A5FA"/>
+    <text x="454" y="346" font-size="28" font-weight="700" fill="#2563EB" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">CLI / Scripts</text>
+    <text x="454" y="382" font-size="20" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• bootstrap / doctor</text>
+    <text x="454" y="412" font-size="20" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• validate / compile / simulate</text>
+
+    <rect x="820" y="170" width="320" height="120" rx="22" fill="#FFFFFF" stroke="#22C55E"/>
+    <text x="854" y="216" font-size="28" font-weight="700" fill="#15803D" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">Spring Boot Backend</text>
+    <text x="854" y="252" font-size="20" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• Spec 검증 / 흐름 계획</text>
+    <text x="854" y="282" font-size="20" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• 단계별 결과 집계</text>
+
+    <rect x="820" y="340" width="320" height="120" rx="22" fill="#FFFFFF" stroke="#A855F7"/>
+    <text x="854" y="386" font-size="28" font-weight="700" fill="#7E22CE" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">FastAPI AI Server</text>
+    <text x="854" y="422" font-size="20" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• Prompt 조합 / OpenAI / Codex / RAG</text>
+
+    <rect x="1200" y="170" width="150" height="290" rx="22" fill="#FFFFFF" stroke="#F59E0B"/>
+    <text x="1232" y="214" font-size="26" font-weight="700" fill="#B45309" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">Artifacts</text>
+    <text x="1232" y="254" font-size="18" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• 코드</text>
+    <text x="1232" y="284" font-size="18" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• 테스트</text>
+    <text x="1232" y="314" font-size="18" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• 문서</text>
+    <text x="1232" y="344" font-size="18" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• Prompt</text>
+    <text x="1232" y="374" font-size="18" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• Trace</text>
+    <text x="1232" y="404" font-size="18" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">• Audit</text>
+  </g>
+
+  <g stroke="#64748B" stroke-width="4" stroke-linecap="round">
+    <path d="M360 230H420"/>
+    <path d="M360 230C390 230 390 185 420 185"/>
+    <path d="M360 230C390 230 390 375 420 375"/>
+    <path d="M750 185H820"/>
+    <path d="M750 375H820"/>
+    <path d="M1140 230H1200"/>
+    <path d="M1140 400H1200"/>
+    <path d="M980 290V340" stroke-dasharray="10 10"/>
+  </g>
+
+  <g fill="#64748B">
+    <path d="M404 178L420 185L404 192V178Z"/>
+    <path d="M404 368L420 375L404 382V368Z"/>
+    <path d="M804 178L820 185L804 192V178Z"/>
+    <path d="M804 368L820 375L804 382V368Z"/>
+    <path d="M1184 223L1200 230L1184 237V223Z"/>
+    <path d="M1184 393L1200 400L1184 407V393Z"/>
+  </g>
+</svg>
