@@ -10,20 +10,19 @@ import subprocess
 import sys
 from typing import Any
 
-from tools.agent_flow import build_execution_plan, resolve_agent_flow
 import urllib.error
 import urllib.request
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, str(ROOT_DIR))
+
 TEMPLATE_DIR = ROOT_DIR / "specs" / "templates"
 PROMPT_ROOT_DIR = Path(".specyn") / "prompts"
 VENV_REEXEC_ENV = "SPECYN_RUNNING_FROM_REPO_VENV"
 LOCAL_GRADLE_VERSION = os.environ.get("SPECYN_GRADLE_VERSION", "8.14")
 LOCAL_GRADLE_DIR = ROOT_DIR / ".specyn" / "tools" / f"gradle-{LOCAL_GRADLE_VERSION}"
 WINDOWS_SHELL_EXTENSIONS = {".cmd", ".bat"}
-
-if __package__ is None or __package__ == "":
-    sys.path.insert(0, str(ROOT_DIR))
 
 
 def is_windows() -> bool:
@@ -95,14 +94,39 @@ def reexec_into_repo_venv() -> None:
 
     env = os.environ.copy()
     env[VENV_REEXEC_ENV] = "1"
-    command = [str(venv_python), str(Path(__file__).resolve()), *sys.argv[1:]]
+    command = [str(venv_python), str(ROOT_DIR / "specyn.py"), *sys.argv[1:]]
     raise SystemExit(subprocess.call(command, cwd=str(ROOT_DIR), env=env))
 
 
+def tooling_import_error(error: ModuleNotFoundError) -> RuntimeError:
+    missing_name = error.name or "unknown-module"
+    message = str(error)
+    if missing_name == "unknown-module" and "No module named '" in message:
+        missing_name = message.split("No module named '", 1)[1].split("'", 1)[0]
+
+    return RuntimeError(
+        "필수 Python 의존성을 찾지 못했습니다: "
+        f"{missing_name}. `python scripts/specyn_tasks.py bootstrap`를 다시 실행하거나 "
+        "`.venv`를 활성화한 뒤 명령을 재시도하세요."
+    )
+
+
+def load_agent_flow_tooling() -> tuple[Any, Any]:
+    try:
+        from tools.agent_flow import build_execution_plan, resolve_agent_flow
+    except ModuleNotFoundError as error:  # pragma: no cover - exercised via CLI tests
+        raise tooling_import_error(error) from error
+
+    return build_execution_plan, resolve_agent_flow
+
+
 def load_prompt_tooling() -> tuple[Any, Any, Any]:
-    from tools.prompt_compiler import compile_prompt
-    from tools.spec_loader import load_spec_bundle
-    from tools.validators import validate_bundle
+    try:
+        from tools.prompt_compiler import compile_prompt
+        from tools.spec_loader import load_spec_bundle
+        from tools.validators import validate_bundle
+    except ModuleNotFoundError as error:  # pragma: no cover - exercised via CLI tests
+        raise tooling_import_error(error) from error
 
     return compile_prompt, load_spec_bundle, validate_bundle
 
@@ -187,7 +211,11 @@ def command_report(command: list[str], *, source: str | None = None) -> dict[str
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
-    _, load_spec_bundle, validate_bundle = load_prompt_tooling()
+    try:
+        _, load_spec_bundle, validate_bundle = load_prompt_tooling()
+    except RuntimeError as error:
+        print(f"TOOLING_IMPORT_FAILED: {error}")
+        return 1
 
     bundle = load_bundle_or_report(load_spec_bundle, args.spec_dir)
     if bundle is None:
@@ -221,7 +249,12 @@ def cmd_init_spec(args: argparse.Namespace) -> int:
 
 
 def cmd_compile_prompts(args: argparse.Namespace) -> int:
-    compile_prompt, load_spec_bundle, validate_bundle = load_prompt_tooling()
+    try:
+        compile_prompt, load_spec_bundle, validate_bundle = load_prompt_tooling()
+        build_execution_plan, resolve_agent_flow = load_agent_flow_tooling()
+    except RuntimeError as error:
+        print(f"TOOLING_IMPORT_FAILED: {error}")
+        return 1
 
     bundle = load_bundle_or_report(load_spec_bundle, args.spec_dir)
     if bundle is None:
@@ -260,7 +293,12 @@ def cmd_compile_prompts(args: argparse.Namespace) -> int:
 
 
 def cmd_run(args: argparse.Namespace) -> int:
-    compile_prompt, load_spec_bundle, validate_bundle = load_prompt_tooling()
+    try:
+        compile_prompt, load_spec_bundle, validate_bundle = load_prompt_tooling()
+        build_execution_plan, _ = load_agent_flow_tooling()
+    except RuntimeError as error:
+        print(f"TOOLING_IMPORT_FAILED: {error}")
+        return 1
 
     bundle = load_bundle_or_report(load_spec_bundle, args.spec_dir)
     if bundle is None:
