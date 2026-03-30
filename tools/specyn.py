@@ -1,0 +1,414 @@
+from __future__ import annotations
+
+import argparse
+import json
+import os
+from pathlib import Path
+import shlex
+import shutil
+import subprocess
+import sys
+from typing import Any
+
+from tools.agent_flow import build_execution_plan, resolve_agent_flow
+import urllib.error
+import urllib.request
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+TEMPLATE_DIR = ROOT_DIR / "specs" / "templates"
+PROMPT_ROOT_DIR = Path(".specyn") / "prompts"
+VENV_REEXEC_ENV = "SPECYN_RUNNING_FROM_REPO_VENV"
+LOCAL_GRADLE_VERSION = os.environ.get("SPECYN_GRADLE_VERSION", "8.14")
+LOCAL_GRADLE_DIR = ROOT_DIR / ".specyn" / "tools" / f"gradle-{LOCAL_GRADLE_VERSION}"
+WINDOWS_SHELL_EXTENSIONS = {".cmd", ".bat"}
+
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, str(ROOT_DIR))
+
+
+def is_windows() -> bool:
+    return os.name == "nt"
+
+
+def format_command(command: list[str]) -> str:
+    if is_windows():
+        return subprocess.list2cmdline(command)
+    return " ".join(shlex.quote(part) for part in command)
+
+
+def repo_venv_python() -> Path | None:
+    candidates = [
+        ROOT_DIR / ".venv" / "bin" / "python",
+        ROOT_DIR / ".venv" / "Scripts" / "python.exe",
+        ROOT_DIR / ".venv" / "Scripts" / "python",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def repo_local_gradle() -> Path | None:
+    candidates = [
+        LOCAL_GRADLE_DIR / "bin" / "gradle",
+        LOCAL_GRADLE_DIR / "bin" / "gradle.bat",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def normalize_path(value: str) -> str:
+    return str(Path(value))
+
+
+def should_reexec_into_repo_venv(command: str | None) -> bool:
+    if command in {None, "doctor"}:
+        return False
+
+    venv_python = repo_venv_python()
+    if venv_python is None:
+        return False
+
+    current_python = Path(sys.executable).resolve()
+    try:
+        if current_python.samefile(venv_python):
+            return False
+    except FileNotFoundError:
+        pass
+
+    return os.environ.get(VENV_REEXEC_ENV) != "1"
+
+
+def reexec_into_repo_venv() -> None:
+    venv_python = repo_venv_python()
+    if venv_python is None:
+        return
+
+    env = os.environ.copy()
+    env[VENV_REEXEC_ENV] = "1"
+    command = [str(venv_python), str(Path(__file__).resolve()), *sys.argv[1:]]
+    raise SystemExit(subprocess.call(command, cwd=str(ROOT_DIR), env=env))
+
+
+def load_prompt_tooling() -> tuple[Any, Any, Any]:
+    from tools.prompt_compiler import compile_prompt
+    from tools.spec_loader import load_spec_bundle
+    from tools.validators import validate_bundle
+
+    return compile_prompt, load_spec_bundle, validate_bundle
+
+
+def load_bundle_or_report(load_spec_bundle: Any, spec_dir: str) -> dict[str, Any] | None:
+    try:
+        return load_spec_bundle(Path(spec_dir))
+    except (FileNotFoundError, ValueError) as error:
+        print(f"SPEC_LOAD_FAILED: {error}")
+        return None
+
+
+def bundle_to_request(
+    project_id: str,
+    bundle: dict[str, Any],
+    workspace: str,
+    rag_enabled: bool,
+) -> dict[str, Any]:
+    documents = [
+        {
+            "name": document.name,
+            "type": document.spec_type,
+            "content": document.raw_content,
+        }
+        for document in bundle.values()
+    ]
+    return {
+        "projectId": project_id,
+        "documents": documents,
+        "ragEnabled": rag_enabled,
+        "dryRun": False,
+        "workspacePath": workspace,
+    }
+
+
+def prepare_command_for_subprocess(command: list[str]) -> list[str]:
+    if not command:
+        raise ValueError("command must not be empty")
+
+    prepared = list(command)
+    executable = prepared[0]
+
+    if is_windows():
+        if not any(separator in executable for separator in (os.sep, "/", "\\")):
+            resolved = shutil.which(executable)
+            if resolved:
+                executable = resolved
+        prepared[0] = executable
+        if Path(executable).suffix.lower() in WINDOWS_SHELL_EXTENSIONS:
+            return ["cmd", "/c", executable, *prepared[1:]]
+        return prepared
+
+    path = Path(executable)
+    if path.exists() and path.is_file() and not os.access(path, os.X_OK):
+        if shutil.which("bash"):
+            return ["bash", str(path), *prepared[1:]]
+    return prepared
+
+
+def command_report(command: list[str], *, source: str | None = None) -> dict[str, Any]:
+    prepared = prepare_command_for_subprocess(command)
+    item: dict[str, Any] = {"available": True}
+    if source is not None:
+        item["source"] = source
+
+    try:
+        completed = subprocess.run(
+            prepared,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=False,
+            text=True,
+        )
+        first_line = (completed.stdout or "").splitlines()[0] if completed.stdout else ""
+        item["version"] = first_line
+    except Exception as error:  # pragma: no cover - defensive
+        item["version"] = f"ERR: {error}"
+        item["command"] = format_command(prepared)
+
+    return item
+
+
+def cmd_validate(args: argparse.Namespace) -> int:
+    _, load_spec_bundle, validate_bundle = load_prompt_tooling()
+
+    bundle = load_bundle_or_report(load_spec_bundle, args.spec_dir)
+    if bundle is None:
+        return 1
+    issues = validate_bundle(bundle)
+
+    if not issues:
+        print("VALIDATION_OK")
+        return 0
+
+    for issue in issues:
+        print(f"[{issue.level}] {issue.code}: {issue.message}")
+    return 1
+
+
+def cmd_init_spec(args: argparse.Namespace) -> int:
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    for template_path in sorted(TEMPLATE_DIR.glob("*.md")):
+        content = template_path.read_text(encoding="utf-8")
+        content = content.replace("{{project_id}}", args.project_id)
+        target = output_dir / template_path.name
+        if target.exists() and not args.overwrite:
+            print(f"SKIP {target}")
+            continue
+        target.write_text(content, encoding="utf-8")
+        print(f"CREATED {target}")
+
+    return 0
+
+
+def cmd_compile_prompts(args: argparse.Namespace) -> int:
+    compile_prompt, load_spec_bundle, validate_bundle = load_prompt_tooling()
+
+    bundle = load_bundle_or_report(load_spec_bundle, args.spec_dir)
+    if bundle is None:
+        return 1
+    issues = validate_bundle(bundle)
+    if issues:
+        for issue in issues:
+            print(f"[{issue.level}] {issue.code}: {issue.message}")
+        return 1
+
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    previous_outputs: list[str] = []
+    workspace_path = normalize_path(args.workspace)
+    base_flow = resolve_agent_flow(
+        bundle, rag_enabled=getattr(args, "rag_enabled", False)
+    ).execution_flow
+    execution_plan = build_execution_plan(bundle, rag_enabled=getattr(args, "rag_enabled", False))
+    print(f"AGENT_FLOW {' -> '.join(base_flow)}")
+    if any(step.phase != "main" for step in execution_plan):
+        print("EXECUTION_PLAN " + " -> ".join(step.label for step in execution_plan))
+    for step in execution_plan:
+        prompt = compile_prompt(
+            agent_name=step.agent,
+            bundle=bundle,
+            previous_outputs=previous_outputs,
+            workspace_path=workspace_path,
+        )
+        target = output_dir / f"{step.label}.prompt.md"
+        target.write_text(prompt, encoding="utf-8")
+        previous_outputs.append(f"{step.label}: prompt compiled -> {target}")
+        print(f"PROMPT_WRITTEN {target}")
+
+    return 0
+
+
+def cmd_run(args: argparse.Namespace) -> int:
+    compile_prompt, load_spec_bundle, validate_bundle = load_prompt_tooling()
+
+    bundle = load_bundle_or_report(load_spec_bundle, args.spec_dir)
+    if bundle is None:
+        return 1
+    issues = validate_bundle(bundle)
+    if issues:
+        for issue in issues:
+            print(f"[{issue.level}] {issue.code}: {issue.message}")
+        return 1
+
+    workspace_path = normalize_path(args.workspace)
+    request_body = bundle_to_request(
+        project_id=args.project_id,
+        bundle=bundle,
+        workspace=workspace_path,
+        rag_enabled=args.rag_enabled,
+    )
+
+    if args.backend_url:
+        payload = json.dumps(request_body).encode("utf-8")
+        request = urllib.request.Request(
+            url=f"{args.backend_url.rstrip('/')}/api/v1/spec-runs",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request) as response:  # nosec - local backend call only
+                print(response.read().decode("utf-8"))
+                return 0
+        except urllib.error.URLError as error:
+            print(f"BACKEND_CALL_FAILED: {error}")
+            return 1
+
+    previous_outputs: list[str] = []
+    results: list[dict[str, Any]] = []
+    execution_plan = build_execution_plan(bundle, rag_enabled=args.rag_enabled)
+
+    prompt_dir = PROMPT_ROOT_DIR / args.project_id
+    prompt_dir.mkdir(parents=True, exist_ok=True)
+
+    for step in execution_plan:
+        prompt = compile_prompt(
+            agent_name=step.agent,
+            bundle=bundle,
+            previous_outputs=previous_outputs,
+            workspace_path=workspace_path,
+        )
+        prompt_path = prompt_dir / f"{step.label}.prompt.md"
+        prompt_path.write_text(prompt, encoding="utf-8")
+        summary = f"[local-simulated-run] {step.label} prompt compiled. path={prompt_path}"
+        result = {
+            "agent": step.agent.upper().replace("-", "_"),
+            "status": "SIMULATED",
+            "summary": summary,
+            "generatedFiles": [],
+            "validations": [
+                "local backend 미기동 상태에서 prompt만 생성함",
+                f"phase={step.phase}",
+                f"feedbackRound={step.round_number}",
+            ],
+        }
+        results.append(result)
+        previous_outputs.append(summary)
+
+    print(
+        json.dumps(
+            {"runId": "local-simulated", "status": "SIMULATED", "results": results},
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0
+
+
+def cmd_doctor(_: argparse.Namespace) -> int:
+    report: dict[str, dict[str, Any]] = {
+        "python": command_report([sys.executable, "--version"], source="current-interpreter"),
+    }
+
+    standard_commands = {
+        "java": ["java", "-version"],
+        "node": ["node", "-v"],
+        "npm": ["npm", "-v"],
+        "codex": ["codex", "--help"],
+        "docker": ["docker", "--version"],
+    }
+
+    for name, command in standard_commands.items():
+        binary = command[0]
+        if shutil.which(binary) is None:
+            report[name] = {"available": False}
+            continue
+        report[name] = command_report(command, source="system")
+
+    local_gradle = repo_local_gradle()
+    if local_gradle is not None:
+        report["gradle"] = command_report([str(local_gradle), "-v"], source="repo-local")
+    elif shutil.which("gradle") is not None:
+        report["gradle"] = command_report(["gradle", "-v"], source="system")
+    else:
+        report["gradle"] = {"available": False}
+
+    report["venv"] = {
+        "available": repo_venv_python() is not None,
+        "python": str(repo_venv_python()) if repo_venv_python() is not None else None,
+    }
+
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Specyn CLI")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    validate_parser = subparsers.add_parser("validate", help="spec bundle 검증")
+    validate_parser.add_argument("--spec-dir", required=True)
+    validate_parser.set_defaults(func=cmd_validate)
+
+    init_parser = subparsers.add_parser("init-spec", help="spec 템플릿 복사")
+    init_parser.add_argument("--project-id", required=True)
+    init_parser.add_argument("--output-dir", required=True)
+    init_parser.add_argument("--overwrite", action="store_true")
+    init_parser.set_defaults(func=cmd_init_spec)
+
+    compile_parser = subparsers.add_parser("compile-prompts", help="agent prompt 파일 생성")
+    compile_parser.add_argument("--spec-dir", required=True)
+    compile_parser.add_argument("--output-dir", default=str(PROMPT_ROOT_DIR))
+    compile_parser.add_argument("--workspace", default=".workspace/default")
+    compile_parser.add_argument("--rag-enabled", action="store_true")
+    compile_parser.set_defaults(func=cmd_compile_prompts)
+
+    run_parser = subparsers.add_parser("run", help="backend 호출 또는 로컬 시뮬레이션 실행")
+    run_parser.add_argument("--spec-dir", required=True)
+    run_parser.add_argument("--project-id", default="todo-service")
+    run_parser.add_argument("--workspace", default=".workspace/todo-service")
+    run_parser.add_argument("--backend-url")
+    run_parser.add_argument("--rag-enabled", action="store_true")
+    run_parser.set_defaults(func=cmd_run)
+
+    doctor_parser = subparsers.add_parser("doctor", help="로컬 실행 환경 점검")
+    doctor_parser.set_defaults(func=cmd_doctor)
+
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if should_reexec_into_repo_venv(args.command):
+        reexec_into_repo_venv()
+
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
