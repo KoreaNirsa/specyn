@@ -1,12 +1,15 @@
 package com.axbuilder.backend.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -41,6 +44,14 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .anyRequest().authenticated());
         return http.build();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "axbuilder.security.enabled", havingValue = "false", matchIfMissing = true)
+    public UserDetailsService noLocalLoginUserDetailsService() {
+        return username -> {
+            throw new UsernameNotFoundException("로컬 개발 기본 계정은 비활성화되어 있습니다: " + username);
+        };
     }
 
     @Bean

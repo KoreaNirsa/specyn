@@ -10,6 +10,7 @@ import signal
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 import zipfile
 
@@ -26,6 +27,8 @@ LOCAL_GRADLE_ARCHIVE = LOCAL_TOOL_DIR / f"gradle-{LOCAL_GRADLE_VERSION}-bin.zip"
 WINDOWS_SHELL_EXTENSIONS = {".cmd", ".bat"}
 NPM_PUBLIC_REGISTRY = "https://registry.npmjs.org/"
 NPM_PUBLIC_MIRROR_MARKER = "/artifactory/api/npm/npm-public/"
+DEV_READY_TIMEOUT_SECONDS = 180
+DEV_READY_POLL_INTERVAL_SECONDS = 1
 
 
 class TaskError(RuntimeError):
@@ -330,6 +333,66 @@ def resolve_gradle_command() -> list[str]:
     )
 
 
+def backend_bootrun_command() -> list[str]:
+    return [*resolve_gradle_command(), "--console=plain", "--no-daemon", "--quiet", "bootRun"]
+
+
+def service_responding(url: str, *, timeout: float = 2.0) -> bool:
+    request = urllib.request.Request(url, method="GET")
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return 200 <= getattr(response, "status", 200) < 500
+    except urllib.error.HTTPError as exc:
+        return 200 <= exc.code < 500
+    except Exception:
+        return False
+
+
+def ensure_processes_running(processes: list[tuple[str, subprocess.Popen[bytes]]]) -> None:
+    for name, process in processes:
+        return_code = process.poll()
+        if return_code is None:
+            continue
+        if return_code == 0:
+            raise TaskError(f"{name} 프로세스가 종료되어 dev 모드를 중단합니다.")
+        raise TaskError(f"{name} 프로세스가 비정상 종료되었습니다. exit={return_code}")
+
+
+def wait_for_dev_services(processes: list[tuple[str, subprocess.Popen[bytes]]]) -> None:
+    service_targets = {
+        "AI Server": "http://127.0.0.1:8000/health",
+        "Backend": "http://127.0.0.1:8080/api/v1/spec-runs/health",
+        "Frontend": "http://127.0.0.1:5173/",
+    }
+    ready_services: set[str] = set()
+    deadline = time.monotonic() + DEV_READY_TIMEOUT_SECONDS
+
+    while time.monotonic() < deadline:
+        ensure_processes_running(processes)
+
+        for name, url in service_targets.items():
+            if name in ready_services:
+                continue
+            if service_responding(url):
+                ready_services.add(name)
+                print(prefixed(f"{name} 준비 완료: {url}"))
+
+        if len(ready_services) == len(service_targets):
+            print(
+                prefixed(
+                    "모든 개발 서버 준비 완료: Frontend=http://localhost:5173, Backend=http://localhost:8080, AI Server=http://localhost:8000 (종료는 Ctrl+C)"
+                )
+            )
+            return
+
+        time.sleep(DEV_READY_POLL_INTERVAL_SECONDS)
+
+    pending = ", ".join(name for name in service_targets if name not in ready_services)
+    raise TaskError(
+        f"dev 준비 시간 초과: {pending} 상태를 확인하지 못했습니다. 위 로그와 포트(5173/8000/8080) 점유 상태를 확인하세요."
+    )
+
+
 def run_specyn(command: list[str]) -> None:
     run_checked([*venv_python_cmd(), str(SPECYN_ENTRYPOINT), *command], cwd=ROOT_DIR)
 
@@ -404,7 +467,7 @@ def task_ai_server() -> None:
 
 
 def task_backend() -> None:
-    run_checked([*resolve_gradle_command(), "bootRun"], cwd=BACKEND_DIR)
+    run_checked(backend_bootrun_command(), cwd=BACKEND_DIR)
 
 
 def task_frontend() -> None:
@@ -451,7 +514,7 @@ def start_process(name: str, command: list[str], cwd: Path) -> tuple[str, subpro
 
 def task_dev() -> None:
     ensure_command_available("npm", purpose="Node.js 20+와 npm을 설치한 뒤 다시 시도하세요.")
-    backend_command = [*resolve_gradle_command(), "bootRun"]
+    backend_command = backend_bootrun_command()
 
     processes: list[tuple[str, subprocess.Popen[bytes]]] = []
     try:
@@ -483,14 +546,10 @@ def task_dev() -> None:
             )
         )
 
+        wait_for_dev_services(processes)
+
         while True:
-            for name, process in processes:
-                return_code = process.poll()
-                if return_code is None:
-                    continue
-                if return_code == 0:
-                    raise TaskError(f"{name} 프로세스가 종료되어 dev 모드를 중단합니다.")
-                raise TaskError(f"{name} 프로세스가 비정상 종료되었습니다. exit={return_code}")
+            ensure_processes_running(processes)
             time.sleep(1)
     except KeyboardInterrupt:
         print(prefixed("dev 모드를 종료합니다."))

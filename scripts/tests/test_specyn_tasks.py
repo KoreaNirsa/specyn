@@ -137,3 +137,69 @@ def test_run_checked_preserves_extra_env(monkeypatch, tmp_path: Path) -> None:
     assert captured["command"] == ["echo", "ok"]
     assert captured["cwd"] == tmp_path
     assert captured["env"]["CUSTOM_FLAG"] == "1"
+
+
+def test_backend_bootrun_command_uses_plain_quiet_no_daemon(monkeypatch, tmp_path: Path) -> None:
+    local_gradle = tmp_path / "gradle.bat"
+    local_gradle.write_text("@echo off\n", encoding="utf-8")
+
+    monkeypatch.setattr(specyn_tasks, "local_gradle_executable", lambda: local_gradle)
+    monkeypatch.setattr(specyn_tasks.shutil, "which", lambda binary: None)
+
+    command = specyn_tasks.backend_bootrun_command()
+
+    assert command == [
+        str(local_gradle),
+        "--console=plain",
+        "--no-daemon",
+        "--quiet",
+        "bootRun",
+    ]
+
+
+class _RunningProcess:
+    def poll(self):
+        return None
+
+
+class _StoppedProcess:
+    def __init__(self, code: int) -> None:
+        self.code = code
+
+    def poll(self):
+        return self.code
+
+
+def test_wait_for_dev_services_prints_ready_message(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(specyn_tasks, "service_responding", lambda url: True)
+
+    specyn_tasks.wait_for_dev_services(
+        [
+            ("AI Server", _RunningProcess()),
+            ("Backend", _RunningProcess()),
+            ("Frontend", _RunningProcess()),
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert "AI Server 준비 완료" in output
+    assert "Backend 준비 완료" in output
+    assert "Frontend 준비 완료" in output
+    assert "모든 개발 서버 준비 완료" in output
+
+
+def test_wait_for_dev_services_fails_when_a_process_exits(monkeypatch) -> None:
+    monkeypatch.setattr(specyn_tasks, "service_responding", lambda url: False)
+
+    try:
+        specyn_tasks.wait_for_dev_services(
+            [
+                ("AI Server", _RunningProcess()),
+                ("Backend", _StoppedProcess(1)),
+                ("Frontend", _RunningProcess()),
+            ]
+        )
+    except specyn_tasks.TaskError as exc:
+        assert "Backend 프로세스가 비정상 종료되었습니다. exit=1" in str(exc)
+    else:
+        raise AssertionError("TaskError was not raised")

@@ -1,47 +1,62 @@
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 import re
+import sys
 
 from app.core.config import get_settings
 from app.models.contracts import RagSearchResponse
 
-try:
-    from langchain_core.documents import Document
-    from langchain_text_splitters import RecursiveCharacterTextSplitter
-except ModuleNotFoundError:  # pragma: no cover - optional dependency fallback
-    from dataclasses import dataclass
 
-    @dataclass(frozen=True)
-    class Document:  # type: ignore[override]
-        page_content: str
-        metadata: dict[str, str]
+def should_use_langchain_runtime(version_info: tuple[int, int] | None = None) -> bool:
+    version = version_info or sys.version_info[:2]
+    return version < (3, 14)
 
-    class RecursiveCharacterTextSplitter:  # type: ignore[override]
-        def __init__(self, chunk_size: int, chunk_overlap: int) -> None:
-            self.chunk_size = chunk_size
-            self.chunk_overlap = chunk_overlap
 
-        def split_documents(self, documents: list[Document]) -> list[Document]:
-            chunks: list[Document] = []
-            for document in documents:
-                text = document.page_content
-                if len(text) <= self.chunk_size:
-                    chunks.append(document)
-                    continue
+@dataclass(frozen=True)
+class _FallbackDocument:
+    page_content: str
+    metadata: dict[str, str]
 
-                start = 0
-                while start < len(text):
-                    end = min(start + self.chunk_size, len(text))
-                    chunks.append(
-                        Document(
-                            page_content=text[start:end],
-                            metadata=document.metadata,
-                        )
+
+class _FallbackRecursiveCharacterTextSplitter:
+    def __init__(self, chunk_size: int, chunk_overlap: int) -> None:
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+
+    def split_documents(self, documents: list[_FallbackDocument]) -> list[_FallbackDocument]:
+        chunks: list[_FallbackDocument] = []
+        for document in documents:
+            text = document.page_content
+            if len(text) <= self.chunk_size:
+                chunks.append(document)
+                continue
+
+            start = 0
+            while start < len(text):
+                end = min(start + self.chunk_size, len(text))
+                chunks.append(
+                    _FallbackDocument(
+                        page_content=text[start:end],
+                        metadata=document.metadata,
                     )
-                    if end >= len(text):
-                        break
-                    start = max(end - self.chunk_overlap, start + 1)
-            return chunks
+                )
+                if end >= len(text):
+                    break
+                start = max(end - self.chunk_overlap, start + 1)
+        return chunks
+
+
+if should_use_langchain_runtime():
+    try:
+        from langchain_core.documents import Document
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
+    except ModuleNotFoundError:  # pragma: no cover - optional dependency fallback
+        Document = _FallbackDocument  # type: ignore[assignment]
+        RecursiveCharacterTextSplitter = _FallbackRecursiveCharacterTextSplitter  # type: ignore[assignment]
+else:  # pragma: no cover - python 3.14+ compatibility fallback
+    Document = _FallbackDocument  # type: ignore[assignment]
+    RecursiveCharacterTextSplitter = _FallbackRecursiveCharacterTextSplitter  # type: ignore[assignment]
 
 
 TOKEN_PATTERN = re.compile(r"[A-Za-z0-9가-힣_\-]{2,}")
