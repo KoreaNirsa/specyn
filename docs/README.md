@@ -1,44 +1,39 @@
 # 📚 Specyn 문서 허브
 
-이 디렉터리는 **도입, 실습, 구조 이해**에 필요한 문서를 모아둔 곳입니다.  
-처음 보시는 경우에는 아래 순서대로 읽어보시면 흐름을 잡기 훨씬 수월합니다.
+이 디렉터리는 **실제 사용자가 순서대로 따라가며 `specyn.py run` 까지 실행하고 결과를 확인할 수 있도록** 정리한 문서 모음입니다.
 
-## 추천 읽기 순서
+## 가장 추천하는 읽기 순서
 
-| 순서 | 문서 | 언제 읽으면 좋은가요? |
+| 순서 | 문서 | 목적 |
 |---|---|---|
-| 1 | [quickstart.md](quickstart.md) | 저장소를 막 열어본 직후입니다. |
-| 2 | [playbook.md](playbook.md) | 학습용/파일럿/현업 적용 경로를 나눠 보고 싶을 때입니다. |
-| 3 | [architecture.md](architecture.md) | 컴포넌트 책임과 전체 흐름을 이해하고 싶을 때입니다. |
-| 4 | [agent-catalog.md](agent-catalog.md) | 어떤 Agent가 무엇을 맡는지 알고 싶을 때입니다. |
-| 5 | [sdd-principles.md](sdd-principles.md) | 직접 spec bundle을 작성해 보려 할 때입니다. |
-| 6 | [operations.md](operations.md) | 실행 모드, 환경 변수, CI 흐름을 확인할 때입니다. |
-| 7 | [prompt-engineering.md](prompt-engineering.md) | prompt/handoff 품질 기준을 정리하고 싶을 때입니다. |
-| 8 | [troubleshooting.md](troubleshooting.md) | 실행 중 막혔을 때입니다. |
+| 1 | [quickstart.md](quickstart.md) | 가장 짧고 안전한 첫 실행 경로 |
+| 2 | [playbook.md](playbook.md) | `compile-prompts` 다음 단계부터 전체 SDD 흐름 이해 |
+| 3 | [cli-run-reference.md](cli-run-reference.md) | `specyn.py run` 명령과 옵션을 정확히 이해 |
+| 4 | [sample-service-reference.md](sample-service-reference.md) | 샘플 CRUD 프로젝트와 spec bundle을 참고용으로 활용 |
+| 5 | [operations.md](operations.md) | 실행 모드, 환경 변수, 운영 포인트 확인 |
+| 6 | [troubleshooting.md](troubleshooting.md) | 막혔을 때 빠르게 복구 |
+| 7 | [04-codex-execution.md](04-codex-execution.md) | Codex 실행 환경까지 확장 |
 
-## 문서 지도
+## 문서 역할 요약
 
-| 문서 | 핵심 내용 | 관련 원본 문서 |
-|---|---|---|
-| [quickstart.md](quickstart.md) | 실패 가능성이 낮은 첫 실행 경로 | `docs/00-quickstart.md` |
-| [playbook.md](playbook.md) | 초급~고급 적용 시나리오 | `docs/08-playbooks.md` |
-| [architecture.md](architecture.md) | 전체 구조와 컴포넌트 책임 | `docs/01-architecture.md` |
-| [agent-catalog.md](agent-catalog.md) | Agent 분류, 흐름, loop 설계 | `docs/03-agent-flow.md`, `agents/*` |
-| [sdd-principles.md](sdd-principles.md) | spec bundle 작성 원칙 | `docs/02-spec-driven-development.md` |
-| [operations.md](operations.md) | 실행 모드, 환경 변수, CI | `docs/05-operations.md`, `.env.example`, workflow |
-| [prompt-engineering.md](prompt-engineering.md) | prompt/handoff/guardrail 원칙 | `docs/06-prompt-engineering.md` |
-| [troubleshooting.md](troubleshooting.md) | 자주 발생하는 문제와 해결 순서 | `docs/09-troubleshooting.md` |
+| 문서 | 핵심 내용 |
+|---|---|
+| [quickstart.md](quickstart.md) | bootstrap → doctor → validate → compile-prompts → run → dev → 결과 확인 |
+| [playbook.md](playbook.md) | CLI 기반 실행과 Codex 실행 환경을 모두 비교 |
+| [cli-run-reference.md](cli-run-reference.md) | `run` 명령의 옵션, 실행 모드, 산출물, 예시 |
+| [sample-service-reference.md](sample-service-reference.md) | sample-service spec bundle의 목적과 파일별 참고 포인트 |
+| [operations.md](operations.md) | 실행 모드, 주요 환경 변수, CI/운영 메모 |
+| [troubleshooting.md](troubleshooting.md) | 로컬 런타임/Codex 모드 공통 문제 해결 |
 
-## docs와 guide는 어떻게 나뉘나요?
+## `docs` 와 `guide` 의 차이
 
 | 디렉터리 | 용도 |
 |---|---|
-| `docs` | 처음 도입하거나 실제로 적용해 보는 팀을 위한 문서입니다. |
-| `guide` | 운영, 유지보수, 추적성, 확장 전략처럼 더 깊은 실무 가이드를 위한 문서입니다. |
+| `docs` | 처음 실행하고 적용하는 사람을 위한 문서 |
+| `guide` | 운영, 유지보수, 로컬 개발, 추적성, 장기 확장 가이드 |
 
-운영자나 메인테이너 관점의 상세 문서는 [../guide/README.md](../guide/README.md)에서 이어서 보실 수 있습니다.
+운영/메인테이너 관점으로 이어서 보려면 [../guide/README.md](../guide/README.md) 를 참고하세요.
 
-## 참고
+## 번호형 문서에 대하여
 
-기존의 `docs/00~12` 번호 문서도 그대로 유지되어 있습니다.  
-새로 정리한 문서는 **처음 읽기 좋은 경로**를 제공하기 위한 별도 레이어라고 보시면 됩니다.
+`00~12` 번호 문서는 기존 구조를 유지하기 위해 남겨 둔 레퍼런스 문서입니다. 실제 실행 흐름은 위 표의 문서 집합을 우선 기준으로 사용하면 됩니다.

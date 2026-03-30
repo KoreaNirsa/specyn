@@ -5,7 +5,9 @@ from datetime import UTC, datetime
 import json
 from pathlib import Path
 from textwrap import dedent
-from typing import Callable
+from typing import Any, Callable
+
+import yaml
 
 from tools.agent_flow import ExecutionStep, build_execution_plan
 from tools.prompt_compiler import compile_prompt
@@ -38,6 +40,11 @@ class LocalRunResult:
 
 
 Generator = Callable[[ProjectBlueprint, Path], dict[Path, str]]
+
+
+class NoAliasSafeDumper(yaml.SafeDumper):
+    def ignore_aliases(self, data: object) -> bool:
+        return True
 
 
 class LocalSddRuntime:
@@ -220,6 +227,11 @@ class LocalSddRuntime:
             "test": "자동화 확인용 generated smoke test와 테스트 계획을 생성했습니다.",
             "docs": "프로젝트 README와 실행 가이드를 생성했습니다.",
         }
+        if blueprint.slug == "sample-service":
+            summaries["backend"] = "샘플 Task CRUD demo를 위한 Spring Boot controller와 AI Server generated router를 생성했습니다."
+            summaries["frontend"] = "목록/생성/상태 변경/삭제를 바로 확인할 수 있는 sample-service CRUD 페이지를 생성했습니다."
+            summaries["dba"] = "sample-service CRUD 흐름에 맞춘 테이블 DDL 초안을 생성했습니다."
+            summaries["docs"] = "sample-service 실행 확인 절차를 포함한 프로젝트 문서를 생성했습니다."
         return summaries.get(agent_name, f"{agent_name} 산출물을 생성했습니다.") + f" files={len(generated_files)}"
 
     def _build_step_report(
@@ -325,59 +337,99 @@ class LocalSddRuntime:
         return {GENERATED_DOCS_DIR / f"{blueprint.slug}.md": self._build_project_doc(blueprint)}
 
     def _build_openapi_yaml(self, blueprint: ProjectBlueprint) -> str:
-        response_example = json.dumps(blueprint.response_example or {"status": "ok"}, ensure_ascii=False)
-        request_example = json.dumps(blueprint.request_example or {"sample": "value"}, ensure_ascii=False)
-        paths_block: list[str] = []
-        for endpoint in self._effective_endpoints(blueprint):
-            lines = [
-                f"  {endpoint.path}:",
-                f"    {endpoint.method.lower()}:",
-                f"      operationId: {endpoint.operation_id}",
-                f"      summary: {endpoint.description}",
-                f"      tags: [{blueprint.slug}]",
-            ]
-            if endpoint.request_body_allowed:
-                lines.extend([
-                    "      requestBody:",
-                    "        required: false",
-                    "        content:",
-                    "          application/json:",
-                    "            schema:",
-                    "              type: object",
-                    f"            example: {request_example}",
-                ])
-            lines.extend([
-                "      responses:",
-                f"        '{endpoint.response_status}':",
-                f"          description: {endpoint.description}",
-                "          content:",
-                "            application/json:",
-                "              schema:",
-                "                type: object",
-                f"              example: {response_example}",
-            ])
-            paths_block.append("\n".join(lines))
+        document: dict[str, Any] = {
+            "openapi": "3.1.0",
+            "info": {
+                "title": f"{blueprint.title} Generated API",
+                "version": "1.0.0",
+                "description": blueprint.summary,
+            },
+            "servers": [{"url": "http://localhost:8080"}],
+            "paths": {},
+            "x-specyn": {
+                "executionFlow": list(blueprint.execution_flow) or ["planner"],
+                "errorPolicies": list(blueprint.error_policies) or ["none"],
+            },
+        }
 
-        error_lines = "\n".join(f"    - {item}" for item in blueprint.error_policies) or "    - none"
-        execution_lines = "\n".join(f"    - {agent}" for agent in blueprint.execution_flow) or "    - planner"
-        return dedent(
-            f"""
-            openapi: 3.1.0
-            info:
-              title: {blueprint.title} Generated API
-              version: 1.0.0
-              description: {blueprint.summary}
-            servers:
-              - url: http://localhost:8080
-            paths:
-            {'\n'.join(paths_block)}
-            x-specyn:
-              executionFlow:
-            {execution_lines}
-              errorPolicies:
-            {error_lines}
-            """
-        ).strip() + "\n"
+        paths = document["paths"]
+        assert isinstance(paths, dict)
+        for endpoint in self._effective_endpoints(blueprint):
+            path_item = paths.setdefault(endpoint.path, {})
+            assert isinstance(path_item, dict)
+            operation: dict[str, Any] = {
+                "operationId": endpoint.operation_id,
+                "summary": endpoint.description,
+                "tags": [blueprint.slug],
+                "responses": {
+                    str(endpoint.response_status): self._openapi_response(blueprint, endpoint),
+                },
+            }
+            request_example = self._openapi_request_example(blueprint, endpoint)
+            if endpoint.request_body_allowed and request_example is not None:
+                operation["requestBody"] = {
+                    "required": False,
+                    "content": {
+                        "application/json": {
+                            "schema": {"type": "object"},
+                            "example": request_example,
+                        }
+                    },
+                }
+            path_item[endpoint.method.lower()] = operation
+
+        return yaml.dump(
+            document,
+            Dumper=NoAliasSafeDumper,
+            allow_unicode=True,
+            sort_keys=False,
+            default_flow_style=False,
+        )
+
+    def _openapi_request_example(self, blueprint: ProjectBlueprint, endpoint: ApiEndpoint) -> dict[str, Any] | None:
+        if endpoint.method == "PATCH" and endpoint.path.endswith("/status"):
+            return {"status": "DONE"}
+        if endpoint.request_body_allowed:
+            return blueprint.request_example or {"sample": "value"}
+        return None
+
+    def _openapi_response(self, blueprint: ProjectBlueprint, endpoint: ApiEndpoint) -> dict[str, Any]:
+        response: dict[str, Any] = {"description": endpoint.description}
+        if endpoint.response_status == 204:
+            return response
+
+        response["content"] = {
+            "application/json": {
+                "schema": {"type": "object"},
+                "example": self._openapi_response_example(blueprint, endpoint),
+            }
+        }
+        return response
+
+    def _openapi_response_example(self, blueprint: ProjectBlueprint, endpoint: ApiEndpoint) -> dict[str, Any]:
+        base_item = self._openapi_base_item_example(blueprint)
+        if blueprint.slug == "sample-service":
+            if endpoint.method == "GET" and endpoint.path == "/api/v1/tasks":
+                return {"items": [base_item], "count": 1}
+            if endpoint.method == "GET" and endpoint.path.endswith("/{id}"):
+                return {"item": base_item}
+            if endpoint.method == "POST":
+                return {"item": base_item, "count": 3}
+            if endpoint.method == "PATCH" and endpoint.path.endswith("/status"):
+                return {"item": dict(base_item, status="DONE")}
+        return blueprint.response_example or {"status": "ok"}
+
+    def _openapi_base_item_example(self, blueprint: ProjectBlueprint) -> dict[str, Any]:
+        response_example = blueprint.response_example or {}
+        item = response_example.get("item") if isinstance(response_example, dict) else None
+        if isinstance(item, dict):
+            return item
+        items = response_example.get("items") if isinstance(response_example, dict) else None
+        if isinstance(items, list) and items and isinstance(items[0], dict):
+            return items[0]
+        if isinstance(response_example, dict) and response_example:
+            return response_example
+        return {"status": "ok"}
 
     def _build_frontend_api_contract(self, blueprint: ProjectBlueprint) -> str:
         manifest_text = json.dumps(blueprint_to_manifest(blueprint), ensure_ascii=False, indent=2)
@@ -391,6 +443,9 @@ class LocalSddRuntime:
         ).strip() + "\n"
 
     def _build_backend_controller(self, blueprint: ProjectBlueprint) -> str:
+        if blueprint.slug == "sample-service":
+            return self._build_sample_service_backend_controller(blueprint)
+
         class_name = f"Generated{blueprint.class_name}Controller"
         method_blocks = [self._build_backend_summary_method(blueprint)] + [
             self._build_backend_endpoint_method(blueprint, endpoint)
@@ -420,6 +475,198 @@ class LocalSddRuntime:
             public class {class_name} {{
 
             {''.join(method_blocks)}
+                private Map<String, Object> buildPayload(String method, String path, String description) {{
+                    Map<String, Object> payload = new LinkedHashMap<>();
+                    payload.put("projectId", "{blueprint.slug}");
+                    payload.put("title", "{self._escape_java(blueprint.title)}");
+                    payload.put("method", method);
+                    payload.put("path", path);
+                    payload.put("description", description);
+                    payload.put("summary", "{self._escape_java(blueprint.summary)}");
+                    payload.put("generatedBy", "specyn-local-runtime");
+                    payload.put("executionFlow", List.of({agents_list}));
+                    return payload;
+                }}
+            }}
+            """
+        ).strip() + "\n"
+
+    def _build_sample_service_backend_controller(self, blueprint: ProjectBlueprint) -> str:
+        class_name = f"Generated{blueprint.class_name}Controller"
+        agents_list = ", ".join(f'"{self._escape_java(agent)}"' for agent in blueprint.execution_flow) or '"planner"'
+        scenarios = ", ".join(f'"{self._escape_java(item)}"' for item in blueprint.scenarios) or '"none"'
+        return dedent(
+            f"""
+            package com.axbuilder.backend.generated.{blueprint.package_slug};
+
+            import org.springframework.http.HttpStatus;
+            import org.springframework.http.ResponseEntity;
+            import org.springframework.web.bind.annotation.DeleteMapping;
+            import org.springframework.web.bind.annotation.GetMapping;
+            import org.springframework.web.bind.annotation.PathVariable;
+            import org.springframework.web.bind.annotation.PatchMapping;
+            import org.springframework.web.bind.annotation.PostMapping;
+            import org.springframework.web.bind.annotation.RequestBody;
+            import org.springframework.web.bind.annotation.RestController;
+
+            import java.time.Instant;
+            import java.util.ArrayList;
+            import java.util.Collections;
+            import java.util.LinkedHashMap;
+            import java.util.List;
+            import java.util.Map;
+            import java.util.concurrent.atomic.AtomicLong;
+
+            @RestController
+            public class {class_name} {{
+
+                private final AtomicLong sequence = new AtomicLong(0);
+                private final Map<Long, Map<String, Object>> store = Collections.synchronizedMap(new LinkedHashMap<>());
+
+                public {class_name}() {{
+                    seedItem("Spec bundle 검증", "sample-service spec를 validate 하고 generated page를 확인합니다.", "DONE");
+                    seedItem("런타임 확인", "새 항목을 추가하고 상태를 변경한 뒤 삭제까지 확인합니다.", "PENDING");
+                }}
+
+                @GetMapping("/api/v1/generated/{blueprint.slug}/summary")
+                public Map<String, Object> generatedSummary() {{
+                    Map<String, Object> payload = buildPayload("GET", "/api/v1/generated/{blueprint.slug}/summary", "generated project summary");
+                    payload.put("scenarios", List.of({scenarios}));
+                    payload.put("endpointCount", {len(self._effective_endpoints(blueprint))});
+                    payload.put("sampleMode", "task-crud-demo");
+                    payload.put("taskCount", listItems().size());
+                    payload.put("sampleRoute", "/generated/{blueprint.slug}");
+                    return payload;
+                }}
+
+                @GetMapping("/api/v1/tasks")
+                public Map<String, Object> listTasks() {{
+                    Map<String, Object> payload = buildPayload("GET", "/api/v1/tasks", "작업 목록 조회");
+                    List<Map<String, Object>> tasks = listItems();
+                    payload.put("items", tasks);
+                    payload.put("count", tasks.size());
+                    return payload;
+                }}
+
+                @GetMapping("/api/v1/tasks/{{id}}")
+                public ResponseEntity<Map<String, Object>> getTask(@PathVariable Long id) {{
+                    Map<String, Object> task = findStoredItem(id);
+                    if (task == null) {{
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(errorPayload("NOT_FOUND", "작업을 찾을 수 없습니다.", "/api/v1/tasks/{{id}}"));
+                    }}
+                    Map<String, Object> payload = buildPayload("GET", "/api/v1/tasks/{{id}}", "작업 단건 조회");
+                    payload.put("item", copyItem(task));
+                    return ResponseEntity.ok(payload);
+                }}
+
+                @PostMapping("/api/v1/tasks")
+                public ResponseEntity<Map<String, Object>> createTask(@RequestBody(required = false) Map<String, Object> body) {{
+                    String title = readText(body, "title");
+                    if (title.isBlank()) {{
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(errorPayload("VALIDATION_ERROR", "title 필드는 필수입니다.", "/api/v1/tasks"));
+                    }}
+                    String description = readText(body, "description");
+                    Map<String, Object> created = seedItem(title, description, "PENDING");
+                    Map<String, Object> payload = buildPayload("POST", "/api/v1/tasks", "작업 생성");
+                    payload.put("item", created);
+                    payload.put("count", listItems().size());
+                    return ResponseEntity.status(HttpStatus.CREATED).body(payload);
+                }}
+
+                @PatchMapping("/api/v1/tasks/{{id}}/status")
+                public ResponseEntity<Map<String, Object>> updateTaskStatus(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {{
+                    Map<String, Object> task = findStoredItem(id);
+                    if (task == null) {{
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(errorPayload("NOT_FOUND", "작업을 찾을 수 없습니다.", "/api/v1/tasks/{{id}}/status"));
+                    }}
+
+                    String status = readText(body, "status").toUpperCase();
+                    if (!("PENDING".equals(status) || "DONE".equals(status))) {{
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(errorPayload("INVALID_STATUS", "status는 PENDING 또는 DONE 이어야 합니다.", "/api/v1/tasks/{{id}}/status"));
+                    }}
+
+                    synchronized (store) {{
+                        task.put("status", status);
+                        task.put("updatedAt", Instant.now().toString());
+                    }}
+
+                    Map<String, Object> payload = buildPayload("PATCH", "/api/v1/tasks/{{id}}/status", "작업 상태 변경");
+                    payload.put("item", copyItem(task));
+                    return ResponseEntity.ok(payload);
+                }}
+
+                @DeleteMapping("/api/v1/tasks/{{id}}")
+                public ResponseEntity<?> deleteTask(@PathVariable Long id) {{
+                    Map<String, Object> removed;
+                    synchronized (store) {{
+                        removed = store.remove(id);
+                    }}
+                    if (removed == null) {{
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(errorPayload("NOT_FOUND", "작업을 찾을 수 없습니다.", "/api/v1/tasks/{{id}}"));
+                    }}
+                    return ResponseEntity.noContent().build();
+                }}
+
+                private Map<String, Object> seedItem(String title, String description, String status) {{
+                    long id = sequence.incrementAndGet();
+                    Map<String, Object> item = new LinkedHashMap<>();
+                    item.put("id", id);
+                    item.put("title", title);
+                    item.put("description", description);
+                    item.put("status", status);
+                    item.put("createdAt", Instant.now().toString());
+                    item.put("updatedAt", Instant.now().toString());
+                    synchronized (store) {{
+                        store.put(id, item);
+                    }}
+                    return copyItem(item);
+                }}
+
+                private List<Map<String, Object>> listItems() {{
+                    List<Map<String, Object>> items;
+                    synchronized (store) {{
+                        items = new ArrayList<>(store.values());
+                    }}
+                    Collections.reverse(items);
+                    List<Map<String, Object>> copied = new ArrayList<>();
+                    for (Map<String, Object> item : items) {{
+                        copied.add(copyItem(item));
+                    }}
+                    return copied;
+                }}
+
+                private Map<String, Object> findStoredItem(Long id) {{
+                    synchronized (store) {{
+                        return store.get(id);
+                    }}
+                }}
+
+                private String readText(Map<String, Object> body, String key) {{
+                    if (body == null) {{
+                        return "";
+                    }}
+                    Object value = body.get(key);
+                    return value == null ? "" : String.valueOf(value).trim();
+                }}
+
+                private Map<String, Object> errorPayload(String code, String message, String path) {{
+                    Map<String, Object> payload = new LinkedHashMap<>();
+                    payload.put("code", code);
+                    payload.put("message", message);
+                    payload.put("path", path);
+                    payload.put("timestamp", Instant.now().toString());
+                    return payload;
+                }}
+
+                private Map<String, Object> copyItem(Map<String, Object> item) {{
+                    return new LinkedHashMap<>(item);
+                }}
+
                 private Map<String, Object> buildPayload(String method, String path, String description) {{
                     Map<String, Object> payload = new LinkedHashMap<>();
                     payload.put("projectId", "{blueprint.slug}");
@@ -504,6 +751,9 @@ class LocalSddRuntime:
         )
 
     def _build_frontend_page(self, blueprint: ProjectBlueprint) -> str:
+        if blueprint.slug == "sample-service":
+            return self._build_sample_service_frontend_page(blueprint)
+
         endpoint_rows = ",\n  ".join(
             json.dumps({
                 "method": endpoint.method,
@@ -590,7 +840,322 @@ class LocalSddRuntime:
             """
         ).strip() + "\n"
 
+    def _build_sample_service_frontend_page(self, blueprint: ProjectBlueprint) -> str:
+        endpoint_rows = ",\n  ".join(
+            json.dumps(
+                {
+                    "method": endpoint.method,
+                    "path": endpoint.path,
+                    "description": endpoint.description,
+                    "auth": endpoint.auth,
+                    "note": endpoint.note,
+                },
+                ensure_ascii=False,
+            )
+            for endpoint in self._effective_endpoints(blueprint)
+        )
+        return dedent(
+            f"""
+            import {{ FormEvent, useEffect, useState }} from "react";
+
+            import {{ generatedApiContract }} from "./apiContract";
+
+            const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8080";
+            const SUMMARY_URL = BACKEND_URL + "/api/v1/generated/{blueprint.slug}/summary";
+            const TASKS_URL = BACKEND_URL + "/api/v1/tasks";
+
+            type TaskItem = {{
+              id: number;
+              title: string;
+              description?: string;
+              status: string;
+              createdAt?: string;
+              updatedAt?: string;
+            }};
+
+            type TasksPayload = {{ items?: TaskItem[] }};
+            type TaskPayload = {{ item?: TaskItem }};
+
+            const ENDPOINTS = [
+              {endpoint_rows}
+            ] as const;
+
+            async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {{
+              const response = await fetch(url, {{
+                ...init,
+                headers: {{
+                  "Content-Type": "application/json",
+                  ...(init?.headers ?? {{}}),
+                }},
+              }});
+
+              const text = await response.text();
+              const payload = text ? JSON.parse(text) : null;
+              if (!response.ok) {{
+                const message =
+                  payload && typeof payload === "object" && "message" in payload && typeof (payload as {{ message?: unknown }}).message === "string"
+                    ? String((payload as {{ message: string }}).message)
+                    : `${{response.status}} ${{response.statusText}}`;
+                throw new Error(message);
+              }}
+              return payload as T;
+            }}
+
+            async function requestNoContent(url: string, init?: RequestInit): Promise<void> {{
+              const response = await fetch(url, init);
+              if (!response.ok) {{
+                const text = await response.text();
+                const payload = text ? JSON.parse(text) : null;
+                const message =
+                  payload && typeof payload === "object" && "message" in payload && typeof (payload as {{ message?: unknown }}).message === "string"
+                    ? String((payload as {{ message: string }}).message)
+                    : `${{response.status}} ${{response.statusText}}`;
+                throw new Error(message);
+              }}
+            }}
+
+            function taskDetailUrl(id: number): string {{
+              return BACKEND_URL + `/api/v1/tasks/${{id}}`;
+            }}
+
+            function taskStatusUrl(id: number): string {{
+              return BACKEND_URL + `/api/v1/tasks/${{id}}/status`;
+            }}
+
+            export default function GeneratedProjectPage() {{
+              const [tasks, setTasks] = useState<TaskItem[]>([]);
+              const [summaryPayload, setSummaryPayload] = useState<string>("loading...");
+              const [detailPayload, setDetailPayload] = useState<string>("목록에서 '상세 보기'를 누르면 개별 GET 응답을 확인할 수 있습니다.");
+              const [title, setTitle] = useState("");
+              const [description, setDescription] = useState("");
+              const [loading, setLoading] = useState(true);
+              const [submitting, setSubmitting] = useState(false);
+              const [errorMessage, setErrorMessage] = useState<string | null>(null);
+              const [selectedId, setSelectedId] = useState<number | null>(null);
+
+              async function refreshSummary(): Promise<void> {{
+                const payload = await fetchJson<Record<string, unknown>>(SUMMARY_URL);
+                setSummaryPayload(JSON.stringify(payload, null, 2));
+              }}
+
+              async function refreshTasks(): Promise<TaskItem[]> {{
+                const payload = await fetchJson<TasksPayload>(TASKS_URL);
+                const items = Array.isArray(payload.items) ? payload.items : [];
+                setTasks(items);
+                return items;
+              }}
+
+              async function refreshAll(): Promise<void> {{
+                setLoading(true);
+                setErrorMessage(null);
+                try {{
+                  await Promise.all([refreshSummary(), refreshTasks()]);
+                }} catch (error) {{
+                  const message = error instanceof Error ? error.message : String(error);
+                  setErrorMessage(message);
+                }} finally {{
+                  setLoading(false);
+                }}
+              }}
+
+              useEffect(() => {{
+                void refreshAll();
+              }}, []);
+
+              async function loadTaskDetail(id: number): Promise<void> {{
+                const payload = await fetchJson<TaskPayload>(taskDetailUrl(id));
+                setSelectedId(id);
+                setDetailPayload(JSON.stringify(payload, null, 2));
+              }}
+
+              async function handleCreate(event: FormEvent<HTMLFormElement>): Promise<void> {{
+                event.preventDefault();
+                setSubmitting(true);
+                setErrorMessage(null);
+                try {{
+                  const payload = await fetchJson<TaskPayload>(TASKS_URL, {{
+                    method: "POST",
+                    body: JSON.stringify({{ title, description }}),
+                  }});
+                  setTitle("");
+                  setDescription("");
+                  await refreshSummary();
+                  await refreshTasks();
+                  if (payload.item?.id) {{
+                    await loadTaskDetail(payload.item.id);
+                  }}
+                }} catch (error) {{
+                  const message = error instanceof Error ? error.message : String(error);
+                  setErrorMessage(message);
+                }} finally {{
+                  setSubmitting(false);
+                }}
+              }}
+
+              async function handleToggleStatus(task: TaskItem): Promise<void> {{
+                const nextStatus = task.status === "DONE" ? "PENDING" : "DONE";
+                setErrorMessage(null);
+                try {{
+                  await fetchJson<TaskPayload>(taskStatusUrl(task.id), {{
+                    method: "PATCH",
+                    body: JSON.stringify({{ status: nextStatus }}),
+                  }});
+                  await refreshSummary();
+                  await refreshTasks();
+                  await loadTaskDetail(task.id);
+                }} catch (error) {{
+                  const message = error instanceof Error ? error.message : String(error);
+                  setErrorMessage(message);
+                }}
+              }}
+
+              async function handleDelete(taskId: number): Promise<void> {{
+                setErrorMessage(null);
+                try {{
+                  await requestNoContent(taskDetailUrl(taskId), {{ method: "DELETE" }});
+                  const items = await refreshTasks();
+                  await refreshSummary();
+                  if (selectedId === taskId) {{
+                    setSelectedId(null);
+                    setDetailPayload("삭제된 항목입니다. 다른 항목을 선택하거나 새 작업을 생성해 보세요.");
+                  }}
+                  if (items.length === 0) {{
+                    setDetailPayload("현재 등록된 작업이 없습니다. 위 폼에서 새 작업을 생성해 보세요.");
+                  }}
+                }} catch (error) {{
+                  const message = error instanceof Error ? error.message : String(error);
+                  setErrorMessage(message);
+                }}
+              }}
+
+              return (
+                <section className="page-grid">
+                  <article className="panel">
+                    <h2>{blueprint.title} · Generated CRUD Demo</h2>
+                    <p>{blueprint.summary}</p>
+                    <p>
+                      이 페이지는 <code>specyn run</code> 실행으로 생성된 간단한 작업 관리 웹사이트입니다.
+                      아래에서 생성, 상세 조회, 상태 변경, 삭제를 모두 확인할 수 있습니다.
+                    </p>
+                    <ul className="stack-list">
+                      {{generatedApiContract.scenarios.map((scenario) => (
+                        <li key={{scenario}}>{{scenario}}</li>
+                      ))}}
+                    </ul>
+                  </article>
+
+                  <article className="panel">
+                    <div className="panel-header">
+                      <h2>새 작업 생성</h2>
+                      <button type="button" className="secondary-button" onClick={{() => void refreshAll()}} disabled={{loading}}>
+                        새로고침
+                      </button>
+                    </div>
+                    <form className="form-grid" onSubmit={{(event) => void handleCreate(event)}}>
+                      <label>
+                        제목
+                        <input value={{title}} onChange={{(event) => setTitle(event.target.value)}} placeholder="예: README 업데이트" />
+                      </label>
+                      <label>
+                        설명
+                        <textarea value={{description}} onChange={{(event) => setDescription(event.target.value)}} placeholder="예: generated page와 backend API를 함께 확인한다." />
+                      </label>
+                      <div className="button-row">
+                        <button type="submit" disabled={{submitting}}>
+                          {{submitting ? "저장 중..." : "작업 생성"}}
+                        </button>
+                      </div>
+                    </form>
+                    {{errorMessage ? <div className="error-box">{{errorMessage}}</div> : null}}
+                  </article>
+
+                  <article className="panel">
+                    <h2>현재 작업 목록</h2>
+                    {{loading ? <p>작업을 불러오는 중입니다...</p> : null}}
+                    {{!loading && tasks.length === 0 ? <p>아직 등록된 작업이 없습니다.</p> : null}}
+                    <div className="results-grid">
+                      {{tasks.map((task) => (
+                        <article className="result-card" key={{task.id}}>
+                          <div className="panel-header">
+                            <h3>{{task.title}}</h3>
+                            <span className={{`status-badge ${{task.status === "DONE" ? "status-done" : "status-pending"}}`}}>
+                              {{task.status}}
+                            </span>
+                          </div>
+                          <p className="muted-text">ID: {{task.id}}</p>
+                          <p>{{task.description || "설명이 없습니다."}}</p>
+                          <div className="button-row">
+                            <button type="button" className="secondary-button" onClick={{() => void loadTaskDetail(task.id)}}>
+                              상세 보기
+                            </button>
+                            <button type="button" onClick={{() => void handleToggleStatus(task)}}>
+                              상태 토글
+                            </button>
+                            <button type="button" className="secondary-button" onClick={{() => void handleDelete(task.id)}}>
+                              삭제
+                            </button>
+                          </div>
+                        </article>
+                      ))}}
+                    </div>
+                  </article>
+
+                  <article className="panel">
+                    <h2>선택한 작업 상세</h2>
+                    <p className="muted-text">
+                      {{selectedId === null ? "선택된 작업이 없습니다." : `선택된 ID: ${{selectedId}}`}}
+                    </p>
+                    <pre>{{detailPayload}}</pre>
+                  </article>
+
+                  <article className="panel">
+                    <h2>Generated Summary</h2>
+                    <pre>{{summaryPayload}}</pre>
+                  </article>
+
+                  <article className="panel">
+                    <h2>API Contract</h2>
+                    <pre>{{JSON.stringify(generatedApiContract, null, 2)}}</pre>
+                  </article>
+
+                  <article className="panel">
+                    <h2>Endpoints</h2>
+                    <div className="results-grid">
+                      {{ENDPOINTS.map((endpoint) => (
+                        <article className="result-card" key={{endpoint.method + "-" + endpoint.path}}>
+                          <h3>{{endpoint.method}} {{endpoint.path}}</h3>
+                          <p>{{endpoint.description}}</p>
+                          <p><strong>인증:</strong> {{endpoint.auth}}</p>
+                          <p><strong>비고:</strong> {{endpoint.note || "-"}}</p>
+                        </article>
+                      ))}}
+                    </div>
+                  </article>
+                </section>
+              );
+            }}
+            """
+        ).strip() + "\n"
+
     def _build_sql_blueprint(self, blueprint: ProjectBlueprint) -> str:
+        if blueprint.slug == "sample-service":
+            return dedent(
+                f"""
+                -- Generated by Specyn local runtime for {blueprint.slug}
+                create table if not exists {blueprint.package_slug}_tasks (
+                    id bigint generated always as identity primary key,
+                    title varchar(200) not null,
+                    description varchar(1000),
+                    status varchar(32) not null default 'PENDING',
+                    created_at timestamp not null default current_timestamp,
+                    updated_at timestamp not null default current_timestamp
+                );
+
+                create index if not exists idx_{blueprint.package_slug}_tasks_status
+                    on {blueprint.package_slug}_tasks (status);
+                """
+            ).strip() + "\n"
+
         table_name = blueprint.package_slug
         return dedent(
             f"""
@@ -654,48 +1219,89 @@ class LocalSddRuntime:
         ).strip() + "\n"
 
     def _build_test_plan(self, blueprint: ProjectBlueprint) -> str:
-        scenarios = "\n".join(f"- {scenario}" for scenario in blueprint.test_scenarios) or "- 시나리오를 spec에 추가해 주세요."
-        return dedent(
-            f"""
-            # {blueprint.title} Generated Test Plan
+        scenarios = [f"- {scenario}" for scenario in blueprint.test_scenarios] or ["- 시나리오를 spec에 추가해 주세요."]
+        if blueprint.slug == "sample-service":
+            automation_checks = [
+                "- generated backend summary endpoint가 응답한다.",
+                "- GET /api/v1/tasks 로 seeded task와 새로 생성한 task를 모두 확인할 수 있다.",
+                "- POST /api/v1/tasks 로 title/description을 가진 task를 생성할 수 있다.",
+                "- PATCH /api/v1/tasks/{id}/status 로 DONE/PENDING 전환을 검증한다.",
+                "- DELETE /api/v1/tasks/{id} 이후 재조회 시 404를 확인한다.",
+                "- generated frontend page에서 생성/상태 변경/삭제를 수동 QA로 재현한다.",
+            ]
+        else:
+            automation_checks = [
+                "- generated backend summary endpoint가 응답한다.",
+                "- generated ai-server context route가 응답한다.",
+                "- generated frontend page가 endpoint contract를 표시한다.",
+            ]
 
-            ## 목적
-            {blueprint.summary}
-
-            ## 우선 검증 시나리오
-            {scenarios}
-
-            ## 자동화 확인 포인트
-            - generated backend summary endpoint가 응답한다.
-            - generated ai-server context route가 응답한다.
-            - generated frontend page가 endpoint contract를 표시한다.
-            """
-        ).strip() + "\n"
+        lines = [
+            f"# {blueprint.title} Generated Test Plan",
+            "",
+            "## 목적",
+            blueprint.summary,
+            "",
+            "## 우선 검증 시나리오",
+            *scenarios,
+            "",
+            "## 자동화 확인 포인트",
+            *automation_checks,
+        ]
+        return "\n".join(lines).strip() + "\n"
 
     def _build_project_doc(self, blueprint: ProjectBlueprint) -> str:
-        endpoints = "\n".join(f"- `{endpoint.method} {endpoint.path}` · {endpoint.description}" for endpoint in self._effective_endpoints(blueprint)) or "- generated endpoint 없음"
-        execution_flow = "\n".join(f"- {agent}" for agent in blueprint.execution_flow)
-        return dedent(
-            f"""
-            # {blueprint.title}
+        endpoints = [f"- `{endpoint.method} {endpoint.path}` · {endpoint.description}" for endpoint in self._effective_endpoints(blueprint)] or ["- generated endpoint 없음"]
+        execution_flow = [f"- {agent}" for agent in blueprint.execution_flow]
+        if blueprint.slug == "sample-service":
+            lines = [
+                f"# {blueprint.title}",
+                "",
+                "이 문서는 `specyn run` 로컬 실행 결과로 생성된 sample-service CRUD 데모 요약입니다.",
+                "",
+                "## 프로젝트 요약",
+                blueprint.summary,
+                "",
+                "## 실행된 Agent",
+                *execution_flow,
+                "",
+                "## 생성된 확인 포인트",
+                f"- Frontend: `/generated/{blueprint.slug}` 라우트",
+                f"- Backend summary: `/api/v1/generated/{blueprint.slug}/summary`",
+                "- Backend CRUD: `/api/v1/tasks`, `/api/v1/tasks/{id}`, `/api/v1/tasks/{id}/status`",
+                f"- AI Server: `/generated/{blueprint.slug}/context`",
+                "",
+                "## Endpoint 초안",
+                *endpoints,
+                "",
+                "## 실제 확인 순서",
+                "1. `python scripts/specyn_tasks.py dev` 로 전체 스택을 실행합니다.",
+                f"2. `http://localhost:5173/generated/{blueprint.slug}` 에 접속합니다.",
+                "3. 새 작업을 생성하고 상세 보기를 눌러 개별 GET 응답을 확인합니다.",
+                "4. 상태 토글과 삭제를 수행해 프런트엔드와 백엔드가 함께 반응하는지 확인합니다.",
+            ]
+            return "\n".join(lines).strip() + "\n"
 
-            이 문서는 `specyn run` 로컬 실행 결과로 생성된 프로젝트 요약입니다.
-
-            ## 프로젝트 요약
-            {blueprint.summary}
-
-            ## 실행된 Agent
-            {execution_flow}
-
-            ## 생성된 확인 포인트
-            - Frontend: `/generated/{blueprint.slug}` 라우트
-            - Backend: `/api/v1/generated/{blueprint.slug}/summary`
-            - AI Server: `/generated/{blueprint.slug}/context`
-
-            ## Endpoint 초안
-            {endpoints}
-            """
-        ).strip() + "\n"
+        lines = [
+            f"# {blueprint.title}",
+            "",
+            "이 문서는 `specyn run` 로컬 실행 결과로 생성된 프로젝트 요약입니다.",
+            "",
+            "## 프로젝트 요약",
+            blueprint.summary,
+            "",
+            "## 실행된 Agent",
+            *execution_flow,
+            "",
+            "## 생성된 확인 포인트",
+            f"- Frontend: `/generated/{blueprint.slug}` 라우트",
+            f"- Backend: `/api/v1/generated/{blueprint.slug}/summary`",
+            f"- AI Server: `/generated/{blueprint.slug}/context`",
+            "",
+            "## Endpoint 초안",
+            *endpoints,
+        ]
+        return "\n".join(lines).strip() + "\n"
 
     def _escape_java(self, value: str) -> str:
         return value.replace("\\", "\\\\").replace('"', '\\"')

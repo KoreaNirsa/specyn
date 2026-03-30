@@ -1,49 +1,29 @@
 # 🚀 Quick Start
 
-이 문서는 **처음 저장소를 받은 직후** 가장 실패 가능성이 낮은 경로로 Specyn을 확인하는 방법을 안내합니다.
+이 문서는 **처음 저장소를 받은 사용자가 실제로 `specyn.py run` 까지 실행하고, 샘플 CRUD 웹사이트가 뜨는지 확인하는 최소 경로**를 안내합니다.
 
-## 먼저 알고 가시면 좋은 점
+## 무엇을 확인하게 되나요?
 
-- 처음부터 전체 스택을 다 띄우지 않아도 괜찮습니다.
-- `bootstrap → doctor → validate-spec → compile-prompts → run-sim` 순서가 가장 안전합니다.
-- 그 다음 단계로는 `specyn run`을 사용해 **실제 저장소 산출물 생성**까지 바로 이어갈 수 있습니다.
-- 현재 저장소에는 fuller example bundle로 `specs/projects/sample-service`가 포함되어 있습니다.
+이 Quick Start를 끝까지 따라가면 아래를 확인합니다.
+
+1. `specs/projects/sample-service` spec bundle이 validate를 통과한다.
+2. `compile-prompts` 로 agent prompt 산출물이 생성된다.
+3. `specyn.py run` 으로 frontend/backend/ai-server/docs 산출물이 저장소에 생성된다.
+4. `python scripts/specyn_tasks.py dev` 로 전체 개발 서버가 올라온다.
+5. `http://localhost:5173/generated/sample-service` 에서 간단한 Task CRUD 웹사이트가 동작한다.
 
 ## 준비 사항
 
-| 항목 | 필수 여부 | 권장 버전 | 설명 |
-|---|---|---|---|
-| Python | 필수 | 3.12+ | task runner와 CLI 실행에 사용합니다. |
-| Node.js / npm | 필수 | 20+ | 프런트엔드 의존성과 일부 bootstrap 단계에 필요합니다. |
-| Gradle | 선택 | 8.14+ | repo-local Gradle 준비가 실패하는 환경에서 필요합니다. |
-| Docker | 선택 | 최신 | 전체 스택을 Compose로 띄울 때 필요합니다. |
-| OpenAI API Key | 선택 | - | 실제 AI 실행/Codex 연동 시 필요합니다. |
+| 항목 | 필수 여부 | 권장 |
+|---|---|---|
+| Python | 필수 | 3.12+ |
+| Node.js / npm | 필수 | 20+ |
+| Java | 권장 | 21 |
+| Gradle | 선택 | repo-local 또는 8.14+ |
+| Docker | 선택 | Compose 실행 시 |
+| OpenAI API Key | 선택 | Codex/외부 AI 연동 시 |
 
-## 추천 흐름 한눈에 보기
-
-```text
-환경 준비
-  -> bootstrap
-  -> doctor
-  -> validate-spec
-  -> compile-prompts
-  -> run-sim
-  -> specyn run (로컬 CLI 런타임)
-  -> dev 서버에서 생성 결과 확인
-```
-
-## 1) 기본 검증 경로
-
-### Linux / macOS
-
-```bash
-cp .env.example .env
-make bootstrap
-make doctor
-make validate-spec
-make compile-prompts
-make run-sim
-```
+## 1) 기본 준비
 
 ### Windows (PowerShell)
 
@@ -51,22 +31,60 @@ make run-sim
 Copy-Item .env.example .env
 python scripts/specyn_tasks.py bootstrap
 python scripts/specyn_tasks.py doctor
-python scripts/specyn_tasks.py validate-spec
-python scripts/specyn_tasks.py compile-prompts
-python scripts/specyn_tasks.py run-sim
 ```
 
-## 2) 각 명령이 하는 일
+### Linux / macOS
 
-| 명령 | 무엇을 확인하나요? | 기대 결과 |
-|---|---|---|
-| `bootstrap` | `.venv`, 프런트엔드 의존성, 로컬 작업 폴더 준비 | 실행 준비가 됩니다. |
-| `doctor` | Python, Node, Gradle, 환경 상태 점검 | 지금 어디까지 가능한지 알 수 있습니다. |
-| `validate-spec` | 예제 spec bundle의 구조와 필수 항목 검증 | spec 작성 규칙이 지켜졌는지 확인합니다. |
-| `compile-prompts` | spec를 agent prompt로 컴파일 | `.specyn/prompts/...`에 결과가 생성됩니다. |
-| `run-sim` | backend 없이 로컬 시뮬레이션 실행 | 전체 흐름을 빠르게 감으로 익힐 수 있습니다. |
+```bash
+cp .env.example .env
+python3 scripts/specyn_tasks.py bootstrap
+python3 scripts/specyn_tasks.py doctor
+```
 
-## 3) `compile-prompts` 다음 단계: 실제 산출물 생성
+`doctor` 에서는 Python / Node / npm / Java / Gradle / `.venv` 준비 상태를 확인합니다.
+
+## 2) sample-service spec bundle 검증
+
+```powershell
+python specyn.py validate --spec-dir specs/projects/sample-service
+```
+
+정상이라면 `VALIDATION_OK` 가 출력됩니다.
+
+## 3) prompt 파일 생성
+
+### Windows (PowerShell)
+
+```powershell
+python specyn.py compile-prompts `
+  --spec-dir specs/projects/sample-service `
+  --output-dir .specyn/prompts/sample-service `
+  --workspace .workspace/sample-service
+```
+
+### Linux / macOS
+
+```bash
+python3 specyn.py compile-prompts \
+  --spec-dir specs/projects/sample-service \
+  --output-dir .specyn/prompts/sample-service \
+  --workspace .workspace/sample-service
+```
+
+생성 위치:
+
+- `.specyn/prompts/sample-service/*.prompt.md`
+
+## 4) `specyn.py run` 으로 실제 산출물 생성
+
+### Windows (PowerShell)
+
+```powershell
+python specyn.py run `
+  --spec-dir specs/projects/sample-service `
+  --project-id sample-service `
+  --workspace .workspace/sample-service
+```
 
 ### Linux / macOS
 
@@ -77,16 +95,7 @@ python3 specyn.py run \
   --workspace .workspace/sample-service
 ```
 
-### Windows (PowerShell)
-
-```powershell
-python specyn.py run `
-  --spec-dir specs/projects/sample-service `
-  --project-id sample-service `
-  --workspace .workspace/sample-service
-```
-
-이 명령은 아래 파일을 실제로 생성합니다.
+대표 산출물:
 
 - `frontend/src/generated/sample-service/GeneratedProjectPage.tsx`
 - `frontend/src/generated/sample-service/apiContract.ts`
@@ -94,62 +103,40 @@ python specyn.py run `
 - `ai-server/app/generated/sample_service/router.py`
 - `docs/openapi/sample-service.yaml`
 - `docs/generated/sample-service.md`
+- `.workspace/sample-service/.specyn/runs/<run-id>/manifest.json`
 
-## 4) 생성 결과를 바로 보고 싶을 때
-
-### Linux / macOS
-
-```bash
-make dev
-```
-
-### Windows (PowerShell)
+## 5) 개발 서버 실행
 
 ```powershell
 python scripts/specyn_tasks.py dev
 ```
 
-브라우저에서 아래 주소를 확인합니다.
+정상이라면 Frontend / Backend / AI Server 주소가 준비 완료로 출력됩니다.
+
+## 6) 브라우저에서 실제 결과 확인
+
+먼저 이 주소를 엽니다.
 
 - `http://localhost:5173/generated`
 - `http://localhost:5173/generated/sample-service`
-- `http://localhost:8080/api/v1/generated/sample-service/summary`
-- `http://localhost:8000/generated/sample-service/context`
 
-## 5) 각 단계에서 만들어지는 주요 결과물
+추가 확인 주소:
 
-| 경로 | 의미 |
-|---|---|
-| `.env` | 로컬 실행용 환경 변수 파일입니다. |
-| `.venv` | Python 가상환경입니다. |
-| `.specyn/prompts` | 컴파일된 prompt 산출물입니다. |
-| `.workspace/<project>/.specyn/runs` | run manifest와 step report가 쌓이는 위치입니다. |
-| `specs/projects/sample-service` | fuller example bundle입니다. |
-| `frontend/src/generated` | generated frontend page/contract가 생기는 위치입니다. |
-| `backend/src/main/java/.../generated` | generated Spring Boot controller가 생기는 위치입니다. |
-| `ai-server/app/generated` | generated FastAPI route가 생기는 위치입니다. |
+- Backend summary: `http://localhost:8080/api/v1/generated/sample-service/summary`
+- Backend CRUD 목록: `http://localhost:8080/api/v1/tasks`
+- AI Server context: `http://localhost:8000/generated/sample-service/context`
 
-## 6) Codex까지 연결하고 싶을 때
+## 7) sample-service 에서 직접 해볼 것
 
-전체 스택을 띄운 뒤 아래처럼 Backend 경유 모드로 실행합니다.
+1. 제목과 설명을 입력하고 **작업 생성** 버튼을 누릅니다.
+2. 작업 카드에서 **상세 보기** 를 눌러 개별 JSON 응답을 확인합니다.
+3. **상태 토글** 을 눌러 `PENDING` / `DONE` 전환을 확인합니다.
+4. **삭제** 를 눌러 목록과 상세 상태가 갱신되는지 확인합니다.
+5. 페이지 하단의 **Generated Summary** 와 **API Contract** 를 확인합니다.
 
-```powershell
-$env:CODEX_EXEC_MODE = "cli"
-$env:CODEX_COMMAND_TEMPLATE = "codex exec --json --cwd {workspace}"
-python specyn.py run `
-  --backend-url http://localhost:8080 `
-  --spec-dir specs/projects/sample-service `
-  --project-id sample-service `
-  --workspace .
-```
+## 8) 다음 문서
 
-`--workspace .` 는 Codex가 현재 저장소를 직접 수정하게 하는 설정입니다.
-
-## 7) 다음으로 읽으면 좋은 문서
-
-- 실행 단계별 플레이북: [playbook.md](playbook.md)
-- Codex 실행 환경: [04-codex-execution.md](04-codex-execution.md)
-- 구조 이해: [architecture.md](architecture.md)
-- Agent 역할 이해: [agent-catalog.md](agent-catalog.md)
-- spec 작성 기준: [sdd-principles.md](sdd-principles.md)
-- 실행이 막힐 때: [troubleshooting.md](troubleshooting.md)
+- `compile-prompts` 이후 흐름 설명: [playbook.md](playbook.md)
+- `run` 옵션 상세: [cli-run-reference.md](cli-run-reference.md)
+- 샘플 spec bundle 설명: [sample-service-reference.md](sample-service-reference.md)
+- 로컬 개발 상세: [../guide/local-development.md](../guide/local-development.md)

@@ -1,47 +1,125 @@
 openapi: 3.1.0
-          info:
-            title: Sample Service Generated API
-            version: 1.0.0
-            description: 이 문서는 서비스의 제품 목표, 사용자 가치, 성공 기준을 정의하고 downstream spec의 기준점을 제공한다.
-          servers:
-            - url: http://localhost:8080
-          paths:
-            /api/v1/example:
-  get:
-    operationId: get_api_v1_example
-    summary: 목록 조회
-    tags: [sample-service]
-    responses:
-      '200':
-        description: 목록 조회
+info:
+  title: Sample Service Generated API
+  version: 1.0.0
+  description: Specyn 사용자가 `specyn.py run`까지 실행했을 때 실제로 생성 결과를 눈으로 확인할 수 있는 간단한 작업
+    관리 웹사이트의 요구사항을 정의한다.
+servers:
+- url: http://localhost:8080
+paths:
+  /api/v1/tasks:
+    get:
+      operationId: get_api_v1_tasks
+      summary: 작업 목록 조회
+      tags:
+      - sample-service
+      responses:
+        '200':
+          description: 작업 목록 조회
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                items:
+                - id: 2
+                  title: 런타임 확인
+                  description: 새 항목을 추가하고 상태를 변경한 뒤 삭제까지 확인합니다.
+                  status: PENDING
+                  createdAt: '2026-03-30T04:00:00Z'
+                  updatedAt: '2026-03-30T04:00:00Z'
+                count: 1
+    post:
+      operationId: post_api_v1_tasks
+      summary: 작업 생성
+      tags:
+      - sample-service
+      responses:
+        '201':
+          description: 작업 생성
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                item:
+                  id: 2
+                  title: 런타임 확인
+                  description: 새 항목을 추가하고 상태를 변경한 뒤 삭제까지 확인합니다.
+                  status: PENDING
+                  createdAt: '2026-03-30T04:00:00Z'
+                  updatedAt: '2026-03-30T04:00:00Z'
+                count: 3
+      requestBody:
+        required: false
         content:
           application/json:
             schema:
               type: object
-            example: {"id": 1, "field": "value"}
-/api/v1/example:
-  post:
-    operationId: post_api_v1_example
-    summary: 생성
-    tags: [sample-service]
-    requestBody:
-      required: false
-      content:
-        application/json:
-          schema:
-            type: object
-          example: {"field": "value"}
-    responses:
-      '201':
-        description: 생성
+            example:
+              title: README 업데이트
+              description: sample-service generated 페이지 확인
+  /api/v1/tasks/{id}:
+    get:
+      operationId: get_api_v1_tasks_by_id
+      summary: 작업 단건 조회
+      tags:
+      - sample-service
+      responses:
+        '200':
+          description: 작업 단건 조회
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                item:
+                  id: 2
+                  title: 런타임 확인
+                  description: 새 항목을 추가하고 상태를 변경한 뒤 삭제까지 확인합니다.
+                  status: PENDING
+                  createdAt: '2026-03-30T04:00:00Z'
+                  updatedAt: '2026-03-30T04:00:00Z'
+    delete:
+      operationId: delete_api_v1_tasks_by_id
+      summary: 작업 삭제
+      tags:
+      - sample-service
+      responses:
+        '204':
+          description: 작업 삭제
+  /api/v1/tasks/{id}/status:
+    patch:
+      operationId: patch_api_v1_tasks_by_id_status
+      summary: 작업 상태 변경
+      tags:
+      - sample-service
+      responses:
+        '200':
+          description: 작업 상태 변경
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                item:
+                  id: 2
+                  title: 런타임 확인
+                  description: 새 항목을 추가하고 상태를 변경한 뒤 삭제까지 확인합니다.
+                  status: DONE
+                  createdAt: '2026-03-30T04:00:00Z'
+                  updatedAt: '2026-03-30T04:00:00Z'
+      requestBody:
+        required: false
         content:
           application/json:
             schema:
               type: object
-            example: {"id": 1, "field": "value"}
-          x-specyn:
-            executionFlow:
-              - planner
+            example:
+              status: DONE
+x-specyn:
+  executionFlow:
+  - planner
   - design
   - api
   - backend
@@ -55,8 +133,7 @@ openapi: 3.1.0
   - review
   - docs
   - final-review
-            errorPolicies:
-              - 400: 잘못된 입력
-  - 404: 리소스 없음
-  - 409: 충돌
-  - 500: 내부 오류
+  errorPolicies:
+  - '400: `title` 누락, `status` 값 오류'
+  - '404: 존재하지 않는 Task 조회/삭제/상태 변경'
+  - '500: 내부 처리 오류'

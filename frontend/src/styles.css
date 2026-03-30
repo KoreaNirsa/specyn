@@ -33,6 +33,7 @@ code {
 .nav-links {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .nav-links a {
@@ -106,7 +107,7 @@ input {
 }
 
 textarea {
-  min-height: 260px;
+  min-height: 160px;
   resize: vertical;
 }
 
@@ -141,6 +142,42 @@ button {
 
 .secondary-button {
   background: #334155;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.stack-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-done {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.muted-text {
+  color: #475569;
 }
 
 pre {

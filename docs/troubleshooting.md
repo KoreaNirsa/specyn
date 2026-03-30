@@ -1,106 +1,128 @@
 # 🛠 문제 해결 가이드
 
-실행이 막혔을 때는 문제를 바로 정면 돌파하기보다, **가장 단순한 검증 경로로 다시 내려와서 상태를 확인하는 것**이 훨씬 빠를 때가 많습니다.
+실행이 막혔을 때는 먼저 **가장 단순한 검증 경로로 내려와 상태를 확인**하는 편이 빠릅니다.
 
-## 먼저 다시 확인해 보시면 좋은 순서
+## 권장 복구 순서
 
 ```text
 bootstrap
   -> doctor
-  -> validate-spec
+  -> validate
   -> compile-prompts
-  -> run-sim
-  -> dev 또는 docker compose
+  -> run
+  -> dev
 ```
 
-## 자주 발생하는 문제 요약
+## 자주 발생하는 문제
 
 | 증상 | 먼저 볼 것 | 대표 원인 |
 |---|---|---|
-| `make dev`가 실패합니다 | `doctor`, `gradle.available` | repo-local Gradle 다운로드 실패, 시스템 Gradle 미설치 |
-| Windows에서 `npm`을 못 찾습니다 | PATH, 새 PowerShell 세션 | Node.js 설치 직후 셸 재시작 누락 |
-| `validate`에서 spec 오류가 납니다 | spec 파일 구조 | YAML front matter나 필수 섹션 누락 |
-| `run-sim`은 되는데 실제 생성이 안 됩니다 | `.env`, Codex 설정 | `OPENAI_API_KEY` 미설정, `CODEX_EXEC_MODE=disabled` |
-| frontend가 backend를 못 찾습니다 | `VITE_BACKEND_URL`, 포트 | 5173/8080 포트 충돌 또는 URL 오설정 |
+| `bootstrap` 실패 | `frontend/package-lock.json`, npm registry, 네트워크 | 사내 registry 고정, npm 설치 실패 |
+| `doctor` 에서 Gradle 오류 | repo-local Gradle 경로, Windows 실행 파일 | `gradle`/`gradle.bat` 선택 문제 |
+| `dev` 에서 Backend compile 실패 | `backend/build.gradle.kts`, generated controller | Spring Boot 의존성/BOM 문제, Java API 불일치 |
+| `run` 은 성공했는데 화면이 이상함 | generated frontend page, CSS, Backend API | generated page/class 스타일 누락, contract drift |
+| 브라우저에서 API 호출 실패 | CORS, Backend/AI Server 포트 | `AXB_CORS_ALLOWED_ORIGINS`, 서비스 미기동 |
+| Codex 모드가 실행되지 않음 | `CODEX_EXEC_MODE`, `CODEX_COMMAND_TEMPLATE` | Codex CLI 미설치, 인증 누락 |
 
-## 1. `make dev` 또는 `python scripts/specyn_tasks.py dev`가 실패합니다
+## 1. `doctor` 부터 다시 확인
 
-### 먼저 확인할 것
+```powershell
+python scripts/specyn_tasks.py doctor
+```
 
-- `make doctor` 또는 `python scripts/specyn_tasks.py doctor`
-- `gradle.available`
-- `npm.available`
-- 포트 `5173`, `8000`, `8080` 점유 여부
+특히 아래를 확인합니다.
 
-### 권장 대응 순서
+- Python
+- Node / npm
+- Java
+- Gradle
+- `.venv`
 
-1. `bootstrap`
-2. `doctor`
-3. `validate-spec`
-4. `compile-prompts`
-5. `run-sim`
-6. 그다음 `dev`
+## 2. spec bundle 자체가 맞는지 확인
 
-## 2. Windows에서 `npm` 또는 `gradle`을 찾지 못합니다
+```powershell
+python specyn.py validate --spec-dir specs/projects/sample-service
+```
 
-아래를 차례대로 확인해 보시면 좋습니다.
-
-- Node.js 설치 후 **새 PowerShell 세션**을 열었는지
-- `npm.cmd`가 PATH에 잡혀 있는지
-- 사내 보안 정책이 `.cmd/.bat` 실행을 막고 있지 않은지
-- 시스템 Gradle 또는 repo-local Gradle 준비가 가능한지
-
-## 3. Gradle 다운로드가 막힙니다
-
-사내망이나 오프라인 환경에서는 repo-local Gradle 준비가 실패할 수 있습니다.
-
-이럴 때는 아래 순서가 현실적입니다.
-
-1. 시스템 Gradle 8.14+ 설치
-2. 또는 Docker Compose 경로 사용
-3. 그래도 어렵다면 기본 검증 모드(`validate-spec`, `compile-prompts`, `run-sim`)로 먼저 확인
-
-## 4. `validate`에서 spec 오류가 납니다
-
-가장 자주 나오는 원인은 아래와 같습니다.
+자주 나오는 원인:
 
 - YAML front matter 누락
-- `목적/입력/출력/실행 규칙/Validation 기준/Prompt` 누락
-- Prompt 내부 `Role/Instructions/Format` 누락
-- `depends_on`이 실제 bundle 구조와 맞지 않음
-- `agent.md`의 `execution_flow`에 필수 Agent 누락
+- `목적 / 입력 / 출력 / 실행 규칙 / Validation 기준 / Prompt` 누락
+- `agent.md` 의 execution flow / feedback loop 불일치
+- `api.md` 의 endpoint 표 또는 request/response 예시 부족
 
-이럴 때는 [sdd-principles.md](sdd-principles.md)를 함께 보면서 비교하시면 빠릅니다.
+## 3. `compile-prompts` 는 되는데 `run` 이 기대대로 안 된다
 
-## 5. `run-sim`은 되는데 실제 코드 생성은 안 됩니다
+로컬 CLI 런타임 기준에서는 `specyn.py run` 이 **실제 generated 파일을 저장소에 직접 생성**합니다. 따라서 먼저 아래를 확인합니다.
 
-보통 아래 중 하나입니다.
+- `frontend/src/generated/<project>`
+- `backend/src/main/java/.../generated/...`
+- `ai-server/app/generated/<project>`
+- `docs/generated/<project>.md`
+- `docs/openapi/<project>.yaml`
+- `.workspace/<project>/.specyn/runs/<run-id>/manifest.json`
 
-- `OPENAI_API_KEY`가 비어 있습니다.
-- `CODEX_EXEC_MODE=disabled` 상태입니다.
-- Codex CLI가 설치되지 않았거나 인증되지 않았습니다.
+즉, **로컬 런타임에서는 OpenAI API Key 나 Codex CLI 없이도 generated 산출물이 생겨야 정상**입니다.
 
-즉, **시뮬레이션 성공은 곧바로 실제 생성 준비 완료를 뜻하지는 않습니다.**
+## 4. `dev` 는 떴는데 브라우저에서 확인이 어렵다
 
-## 6. 어디서부터 봐야 할지 모르겠습니다
+sample-service 기준 확인 순서:
 
-가장 안전한 순서는 아래입니다.
+1. `http://localhost:5173/generated`
+2. `http://localhost:5173/generated/sample-service`
+3. `http://localhost:8080/api/v1/generated/sample-service/summary`
+4. `http://localhost:8080/api/v1/tasks`
+5. `http://localhost:8000/generated/sample-service/context`
 
-1. `README.md`
-2. [quickstart.md](quickstart.md)
-3. [sdd-principles.md](sdd-principles.md)
-4. [agent-catalog.md](agent-catalog.md)
-5. `specs/examples/todo-service`
+샘플 페이지에서 아래가 모두 동작해야 합니다.
 
-## 7. 그래도 막힐 때 체크리스트
+- 생성
+- 목록 조회
+- 상세 조회
+- 상태 토글
+- 삭제
 
-| 체크 항목 | 확인 여부 |
+## 5. `dev` 중 특정 서비스만 실패한다
+
+| 서비스 | 먼저 확인할 것 |
 |---|---|
-| `.env`가 생성되어 있는가 | ☐ |
-| `.venv`가 정상 생성되었는가 | ☐ |
-| frontend 의존성이 설치되었는가 | ☐ |
-| `doctor` 결과를 확인했는가 | ☐ |
-| 예제 spec bundle이 validate를 통과하는가 | ☐ |
-| `run-sim`은 통과하는가 | ☐ |
+| Frontend | `npm`, `node_modules`, `VITE_BACKEND_URL`, `VITE_AI_SERVER_URL` |
+| Backend | Java 21, Gradle, `backend/build.gradle.kts`, generated controller |
+| AI Server | `.venv`, FastAPI import, Python 버전, CORS |
 
-추가로 서비스별 상세 점검이 필요하시면 [../guide/local-development.md](../guide/local-development.md)을 함께 보시는 편이 좋습니다.
+## 6. Codex 모드에서만 실패한다
+
+Codex 모드는 로컬 런타임과 별개로 아래가 추가로 필요합니다.
+
+- `CODEX_EXEC_MODE=cli`
+- `CODEX_COMMAND_TEMPLATE` 설정
+- Codex CLI 설치 및 인증
+- Backend / AI Server 실행
+
+즉, 로컬 CLI 런타임이 정상이라고 해서 Codex 모드까지 자동으로 준비되는 것은 아닙니다.
+
+## 7. 그래도 복구가 어렵다면
+
+다시 가장 짧은 경로로 돌아가 아래 순서를 재실행합니다.
+
+```powershell
+python scripts/specyn_tasks.py bootstrap
+python scripts/specyn_tasks.py doctor
+python specyn.py validate --spec-dir specs/projects/sample-service
+python specyn.py compile-prompts `
+  --spec-dir specs/projects/sample-service `
+  --output-dir .specyn/prompts/sample-service `
+  --workspace .workspace/sample-service
+python specyn.py run `
+  --spec-dir specs/projects/sample-service `
+  --project-id sample-service `
+  --workspace .workspace/sample-service
+python scripts/specyn_tasks.py dev
+```
+
+관련 문서:
+
+- [quickstart.md](quickstart.md)
+- [playbook.md](playbook.md)
+- [cli-run-reference.md](cli-run-reference.md)
+- [../guide/local-development.md](../guide/local-development.md)
