@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from pathlib import Path
 import shlex
@@ -23,6 +24,8 @@ LOCAL_GRADLE_VERSION = os.environ.get("SPECYN_GRADLE_VERSION", "8.14")
 LOCAL_GRADLE_DIR = LOCAL_TOOL_DIR / f"gradle-{LOCAL_GRADLE_VERSION}"
 LOCAL_GRADLE_ARCHIVE = LOCAL_TOOL_DIR / f"gradle-{LOCAL_GRADLE_VERSION}-bin.zip"
 WINDOWS_SHELL_EXTENSIONS = {".cmd", ".bat"}
+NPM_PUBLIC_REGISTRY = "https://registry.npmjs.org/"
+NPM_PUBLIC_MIRROR_MARKER = "/artifactory/api/npm/npm-public/"
 
 
 class TaskError(RuntimeError):
@@ -46,6 +49,85 @@ def format_command(command: list[str]) -> str:
     if is_windows():
         return subprocess.list2cmdline(command)
     return " ".join(shlex.quote(part) for part in command)
+
+
+def clean_env() -> dict[str, str]:
+    env = os.environ.copy()
+
+    remove_keys = [
+        "HTTP_PROXY",
+        "HTTPS_PROXY",
+        "http_proxy",
+        "https_proxy",
+        "ALL_PROXY",
+        "all_proxy",
+        "NPM_CONFIG_REGISTRY",
+        "npm_config_registry",
+        "NODE_OPTIONS",
+        "NODE_EXTRA_CA_CERTS",
+    ]
+
+    for key in remove_keys:
+        env.pop(key, None)
+
+    env["NPM_CONFIG_REGISTRY"] = NPM_PUBLIC_REGISTRY.rstrip("/")
+    return env
+
+
+def rewrite_npm_resolved_url(url: str) -> str:
+    if url.startswith(NPM_PUBLIC_REGISTRY):
+        return url
+
+    if NPM_PUBLIC_MIRROR_MARKER in url:
+        _, _, package_path = url.partition(NPM_PUBLIC_MIRROR_MARKER)
+        return f"{NPM_PUBLIC_REGISTRY}{package_path.lstrip('/')}"
+
+    return url
+
+
+def sanitize_npm_lockfile(lockfile_path: Path | None = None) -> int:
+    path = lockfile_path or FRONTEND_DIR / "package-lock.json"
+    if not path.exists():
+        return 0
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    packages = data.get("packages")
+    if not isinstance(packages, dict):
+        return 0
+
+    rewritten_entries = 0
+    for metadata in packages.values():
+        if not isinstance(metadata, dict):
+            continue
+
+        resolved = metadata.get("resolved")
+        if not isinstance(resolved, str):
+            continue
+
+        rewritten = rewrite_npm_resolved_url(resolved)
+        if rewritten == resolved:
+            continue
+
+        metadata["resolved"] = rewritten
+        rewritten_entries += 1
+
+    if rewritten_entries:
+        path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        print(prefixed(f"npm lockfile registry 정리 완료 ({rewritten_entries} entries)"))
+
+    return rewritten_entries
+
+
+def frontend_npm_install_command() -> list[str]:
+    lockfile = FRONTEND_DIR / "package-lock.json"
+    base_command = ["npm", "ci" if lockfile.exists() else "install"]
+    return [
+        *base_command,
+        f"--registry={NPM_PUBLIC_REGISTRY.rstrip('/')}",
+        "--include=optional",
+        "--no-audit",
+        "--no-fund",
+    ]
 
 
 def system_python_cmd() -> list[str]:
@@ -114,7 +196,7 @@ def run_checked(
     cwd: Path | None = None,
     extra_env: dict[str, str] | None = None,
 ) -> None:
-    env = os.environ.copy()
+    env = clean_env()
     if extra_env:
         env.update(extra_env)
 
@@ -277,7 +359,8 @@ def task_bootstrap() -> None:
     )
 
     ensure_command_available("npm", purpose="Node.js 20+와 npm을 설치한 뒤 다시 시도하세요.")
-    run_checked(["npm", "install"], cwd=FRONTEND_DIR)
+    sanitize_npm_lockfile()
+    run_checked(frontend_npm_install_command(), cwd=FRONTEND_DIR)
     maybe_bootstrap_gradle()
 
     print(prefixed("bootstrap 완료"))

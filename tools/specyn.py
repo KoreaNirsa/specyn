@@ -49,10 +49,17 @@ def repo_venv_python() -> Path | None:
 
 
 def repo_local_gradle() -> Path | None:
-    candidates = [
-        LOCAL_GRADLE_DIR / "bin" / "gradle",
-        LOCAL_GRADLE_DIR / "bin" / "gradle.bat",
-    ]
+    if is_windows():
+        candidates = [
+            LOCAL_GRADLE_DIR / "bin" / "gradle.bat",
+            LOCAL_GRADLE_DIR / "bin" / "gradle",
+        ]
+    else:
+        candidates = [
+            LOCAL_GRADLE_DIR / "bin" / "gradle",
+            LOCAL_GRADLE_DIR / "bin" / "gradle.bat",
+        ]
+
     for candidate in candidates:
         if candidate.exists():
             return candidate
@@ -172,6 +179,7 @@ def command_report(command: list[str], *, source: str | None = None) -> dict[str
         first_line = (completed.stdout or "").splitlines()[0] if completed.stdout else ""
         item["version"] = first_line
     except Exception as error:  # pragma: no cover - defensive
+        item["available"] = False
         item["version"] = f"ERR: {error}"
         item["command"] = format_command(prepared)
 
