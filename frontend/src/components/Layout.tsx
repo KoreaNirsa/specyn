@@ -11,6 +11,7 @@ export function Layout() {
         <nav className="nav-links">
           <NavLink to="/">소개</NavLink>
           <NavLink to="/workspace">워크스페이스</NavLink>
+          <NavLink to="/generated">생성 결과</NavLink>
         </nav>
       </header>
       <Outlet />

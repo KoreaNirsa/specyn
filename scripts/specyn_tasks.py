@@ -596,6 +596,8 @@ def task_run_sim() -> None:
             "specs/examples/todo-service",
             "--workspace",
             ".workspace/todo-service",
+            "--runtime",
+            "simulate",
         ]
     )
 

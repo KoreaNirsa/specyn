@@ -1,0 +1,62 @@
+openapi: 3.1.0
+          info:
+            title: Sample Service Generated API
+            version: 1.0.0
+            description: 이 문서는 서비스의 제품 목표, 사용자 가치, 성공 기준을 정의하고 downstream spec의 기준점을 제공한다.
+          servers:
+            - url: http://localhost:8080
+          paths:
+            /api/v1/example:
+  get:
+    operationId: get_api_v1_example
+    summary: 목록 조회
+    tags: [sample-service]
+    responses:
+      '200':
+        description: 목록 조회
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {"id": 1, "field": "value"}
+/api/v1/example:
+  post:
+    operationId: post_api_v1_example
+    summary: 생성
+    tags: [sample-service]
+    requestBody:
+      required: false
+      content:
+        application/json:
+          schema:
+            type: object
+          example: {"field": "value"}
+    responses:
+      '201':
+        description: 생성
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {"id": 1, "field": "value"}
+          x-specyn:
+            executionFlow:
+              - planner
+  - design
+  - api
+  - backend
+  - frontend
+  - dba
+  - devops
+  - test
+  - code-analysis
+  - security
+  - performance
+  - review
+  - docs
+  - final-review
+            errorPolicies:
+              - 400: 잘못된 입력
+  - 404: 리소스 없음
+  - 409: 충돌
+  - 500: 내부 오류

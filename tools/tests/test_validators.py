@@ -12,6 +12,14 @@ def test_example_bundle_is_valid() -> None:
     assert issues == []
 
 
+
+
+def test_sample_service_bundle_is_valid() -> None:
+    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
+    issues = validate_bundle(bundle)
+
+    assert issues == []
+
 def test_validate_bundle_fails_when_agent_definition_is_missing(
     tmp_path: Path, monkeypatch
 ) -> None:

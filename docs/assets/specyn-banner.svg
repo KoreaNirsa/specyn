@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="420" viewBox="0 0 1200 420" fill="none">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="420" gradientUnits="userSpaceOnUse">
       <stop stop-color="#0F172A"/>
@@ -20,16 +20,5 @@
     <text x="120" y="198" font-size="26" fill="#DBEAFE">Open Source AX(AI Experience) Builder Framework</text>
     <text x="120" y="244" font-size="22" fill="#E2E8F0">기획 → 스펙 → 코드 생성 → 테스트 → 리뷰 → 문서화 → CI 검증까지</text>
     <text x="120" y="282" font-size="22" fill="#E2E8F0">하나의 흐름으로 연결하는 SDD(Spec Driven Development) 기반 시작점입니다.</text>
-  </g>
-
-  <g transform="translate(714 120)">
-    <rect x="0" y="0" width="310" height="54" rx="14" fill="#0B1220" stroke="#3B82F6"/>
-    <text x="24" y="34" font-size="22" font-weight="600" fill="#EFF6FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">Spec Bundle</text>
-    <rect x="42" y="84" width="230" height="50" rx="14" fill="#111827" stroke="#60A5FA"/>
-    <text x="76" y="114" font-size="20" fill="#E5F0FF" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">Agent Flow</text>
-    <rect x="0" y="164" width="310" height="54" rx="14" fill="#0B1220" stroke="#22C55E"/>
-    <text x="24" y="198" font-size="22" font-weight="600" fill="#F0FDF4" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif">Workspace / Artifacts</text>
-    <path d="M155 54V84" stroke="#93C5FD" stroke-width="4" stroke-linecap="round"/>
-    <path d="M155 134V164" stroke="#86EFAC" stroke-width="4" stroke-linecap="round"/>
   </g>
 </svg>
