@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     rag_chunk_size: int = 1200
     rag_chunk_overlap: int = 120
     prompt_snapshot_dir: str = ".specyn/prompts"
+    axb_cors_allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -25,6 +26,14 @@ class Settings(BaseSettings):
     @property
     def project_root(self) -> Path:
         return Path(__file__).resolve().parents[3]
+
+    @property
+    def cors_allowed_origins(self) -> list[str]:
+        return [
+            origin.strip()
+            for origin in self.axb_cors_allowed_origins.split(",")
+            if origin.strip()
+        ]
 
 
 @lru_cache

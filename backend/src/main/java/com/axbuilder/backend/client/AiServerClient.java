@@ -8,6 +8,7 @@ import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import java.net.http.HttpClient;
 import java.time.Duration;
 
 @Component
@@ -16,8 +17,11 @@ public class AiServerClient {
     private final RestClient restClient;
 
     public AiServerClient(RestClient.Builder builder, AxBuilderProperties properties) {
-        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(Duration.ofSeconds(properties.timeoutSeconds()));
+        HttpClient httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(properties.timeoutSeconds()))
+                .build();
+
+        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
         requestFactory.setReadTimeout(Duration.ofSeconds(properties.timeoutSeconds()));
 
         this.restClient = builder
