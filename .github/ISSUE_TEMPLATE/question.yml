@@ -1,0 +1,26 @@
+name: Question
+description: 사용 방법, 실행 흐름, 문서 이해에 대한 질문을 남깁니다.
+title: "[Question] "
+labels: [question]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: 질문 내용
+      description: 막힌 지점이나 궁금한 내용을 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 현재 상황
+      description: 실행한 명령, 참고한 문서, 사용한 spec 경로를 적어 주세요.
+      placeholder: |
+        - 참고 문서:
+        - 실행 명령:
+        - spec 경로:
+  - type: textarea
+    id: expectation
+    attributes:
+      label: 기대한 것
+      description: 어떤 결과를 기대했는지 적어 주세요.

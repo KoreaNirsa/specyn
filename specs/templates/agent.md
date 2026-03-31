@@ -1,7 +1,7 @@
 ---
 id: {{project_id}}-agent
 type: agent
-version: 1.1.0
+version: 1.2.0
 owner_agent: orchestrator
 status: draft
 depends_on: [product, api, test, review]
@@ -20,7 +20,7 @@ execution_flow:
   - review
   - docs
   - final-review
-max_feedback_rounds: 1
+max_feedback_rounds: 2
 feedback_loops:
   - name: api-backend-contract-sync
     trigger_after: backend
@@ -99,6 +99,7 @@ supported_agents:
 - `execution_flow`는 각 Agent의 기본 1차 실행 순서를 의미한다.
 - `feedback_loops`는 1차 실행 이후 필요한 Agent 재진입 순서를 정의한다.
 - `max_feedback_rounds`는 루프별 추가 피드백 라운드의 최대 횟수다.
+- 각 loop는 품질 게이트가 통과될 때까지 협업하되, 상한을 넘기면 human review로 승격한다.
 - 같은 Agent가 다시 실행되더라도 근거 없는 되돌리기를 금지한다.
 - blocker 해소, 문서 drift 해소, 계약 불일치 수정처럼 명확한 이유가 있을 때만 피드백 라운드를 사용한다.
 
@@ -121,7 +122,8 @@ supported_agents:
 3. 각 Agent는 이전 단계 결과의 핵심 validation 요약을 확인한다.
 4. 보안/성능/문서 리스크는 Review와 Final Review에서 재확인한다.
 5. blocker가 있으면 Docs 완료 이후라도 Final Review 이전에 중단할 수 있다.
-6. 특정 도메인에 과적합한 구현/명명은 지양하고 재사용 가능한 구조를 우선한다.
+6. feedback round에서는 `UNRESOLVED`, `BLOCKERS`, `NEXT_HANDOFF`를 구조적으로 남긴다.
+7. 특정 도메인에 과적합한 구현/명명은 지양하고 재사용 가능한 구조를 우선한다.
 
 # trace / handoff contract
 - 각 Agent 결과는 가능하면 `STEP_LABEL`, `AGENT`, `PHASE`, `FEEDBACK_ROUND`, `STATUS`를 남긴다.

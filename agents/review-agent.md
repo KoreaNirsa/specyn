@@ -25,6 +25,7 @@
 - 예외 처리, 입력 검증, `global / common / domain` 또는 동등한 FastAPI 구조 준수 여부, 테스트 존재 여부를 확인한다.
 - spec과 구현 drift를 식별한다.
 - Security/Performance/Analysis Agent가 보고한 리스크를 종합한다.
+- 문서와 가이드가 실제 실행 경로를 재현하는지까지 검토한다.
 
 ## handoff 규칙
 - Docs Agent가 반영해야 할 drift나 문서 수정 포인트를 남긴다.

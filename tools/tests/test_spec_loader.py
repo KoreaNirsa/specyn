@@ -6,7 +6,7 @@ from tools.spec_loader import load_spec_bundle
 
 
 def test_load_spec_bundle() -> None:
-    bundle = load_spec_bundle(Path("specs/examples/todo-service"))
+    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
 
     assert set(bundle.keys()) == {"product", "api", "test", "review", "agent"}
     assert bundle["product"].metadata["owner_agent"] == "planner"

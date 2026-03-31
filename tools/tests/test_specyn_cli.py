@@ -9,8 +9,8 @@ from tools import local_sdd_runtime, prompt_compiler, specyn
 def test_cmd_run_local_returns_generated_file_summary(monkeypatch, capsys, tmp_path: Path) -> None:
     monkeypatch.setattr(prompt_compiler, "AGENT_DIR", Path("agents"))
     monkeypatch.setattr(local_sdd_runtime, "PROMPT_ROOT_DIR", tmp_path / ".specyn" / "prompts")
-    monkeypatch.setattr(local_sdd_runtime, "GENERATED_DOCS_DIR", tmp_path / "docs" / "generated")
-    monkeypatch.setattr(local_sdd_runtime, "GENERATED_AI_SERVER_DIR", tmp_path / "ai-server" / "app" / "generated")
+    monkeypatch.setattr(local_sdd_runtime, "GENERATED_DOCS_DIR", Path("docs") / "generated")
+    monkeypatch.setattr(local_sdd_runtime, "GENERATED_AI_SERVER_DIR", Path("ai-server") / "app" / "generated")
     monkeypatch.setattr(specyn, "ROOT_DIR", tmp_path)
 
     args = type("Args", (), {
@@ -30,4 +30,5 @@ def test_cmd_run_local_returns_generated_file_summary(monkeypatch, capsys, tmp_p
     assert payload["status"] == "COMPLETED"
     assert payload["projectId"] == "sample-service"
     assert payload["runtime"] == "local"
+    assert payload["outputRoot"] == "projects/sample-service"
     assert "frontend/src/generated/sample-service/GeneratedProjectPage.tsx" in payload["generatedFiles"]

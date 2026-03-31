@@ -191,6 +191,17 @@ def resolve_workspace_path(workspace: str | None, project_id: str) -> str:
     return normalize_path(workspace) if workspace and workspace.strip() else normalize_path(Path(".workspace") / project_id)
 
 
+def resolve_project_output_root(project_id: str) -> Path:
+    return ROOT_DIR / "projects" / project_id
+
+
+def display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT_DIR))
+    except ValueError:
+        return str(path)
+
+
 def print_validation_issues(issues: list[Any]) -> None:
     for issue in issues:
         print(f"[{issue.level}] {issue.code}: {issue.message}")
@@ -295,15 +306,18 @@ def cmd_run(args: argparse.Namespace) -> int:
     LocalSddRuntime = load_runtime_tooling()
     if LocalSddRuntime is None:
         return 1
-    runtime = LocalSddRuntime(output_root=ROOT_DIR)
+    output_root = resolve_project_output_root(project_id)
+    output_root.mkdir(parents=True, exist_ok=True)
+    runtime = LocalSddRuntime(output_root=output_root)
     local_result = runtime.execute(project_id=project_id, bundle=bundle, workspace_path=workspace_path, rag_enabled=args.rag_enabled, runtime_mode=args.runtime)
     print(json.dumps({
         "runId": local_result.run_id,
         "status": local_result.status,
         "projectId": project_id,
         "runtime": args.runtime,
-        "workspace": str(local_result.workspace_dir.relative_to(ROOT_DIR)),
-        "promptDir": str(local_result.prompt_dir.relative_to(ROOT_DIR)),
+        "outputRoot": display_path(output_root),
+        "workspace": display_path(local_result.workspace_dir),
+        "promptDir": display_path(local_result.prompt_dir),
         "generatedFiles": local_result.generated_files,
         "results": [
             {
@@ -316,7 +330,7 @@ def cmd_run(args: argparse.Namespace) -> int:
             for result in local_result.results
         ],
     }, ensure_ascii=False, indent=2))
-    return 0
+    return 0 if local_result.status in {"COMPLETED", "SIMULATED"} else 1
 
 
 def cmd_doctor(_: argparse.Namespace) -> int:

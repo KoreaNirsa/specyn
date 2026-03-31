@@ -203,3 +203,27 @@ def test_wait_for_dev_services_fails_when_a_process_exits(monkeypatch) -> None:
         assert "Backend 프로세스가 비정상 종료되었습니다. exit=1" in str(exc)
     else:
         raise AssertionError("TaskError was not raised")
+
+
+def test_task_sample_flow_runs_validate_compile_and_run(monkeypatch) -> None:
+    calls: list[list[str]] = []
+
+    monkeypatch.setattr(specyn_tasks, "task_validate_spec", lambda: calls.append(["validate"]))
+    monkeypatch.setattr(specyn_tasks, "task_compile_prompts", lambda: calls.append(["compile-prompts"]))
+    monkeypatch.setattr(specyn_tasks, "run_specyn", lambda command: calls.append(command))
+
+    specyn_tasks.task_sample_flow()
+
+    assert calls == [
+        ["validate"],
+        ["compile-prompts"],
+        [
+            "run",
+            "--spec-dir",
+            "specs/projects/sample-service",
+            "--project-id",
+            "sample-service",
+            "--workspace",
+            ".workspace/sample-service",
+        ],
+    ]

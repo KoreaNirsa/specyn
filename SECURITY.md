@@ -20,3 +20,8 @@
 - 실제 운영 환경에는 JWT/OAuth2 등 조직 정책에 맞는 인증 구성 적용
 - RAG 문서 색인 시 접근 권한 있는 문서만 포함
 - destructive migration과 shell command는 human review gate 뒤에서 실행
+
+## 공개 저장소 운영 메모
+- 보안 이슈는 공개 이슈보다 비공개 채널을 우선합니다.
+- sample-service는 데모용이므로 실제 운영 인증/인가를 그대로 대체하지 않습니다.
+- generated 코드도 merge 전에 human review를 거칩니다.

@@ -1,0 +1,32 @@
+services:
+  ai-server:
+    image: python:3.13-slim
+    working_dir: /workspace
+    volumes:
+      - ../../:/workspace
+    command: >-
+      bash -lc "pip install -r projects/sample-service/ai-server/requirements.txt && python -m uvicorn app.main:app --app-dir projects/sample-service/ai-server --host 0.0.0.0 --port 8000 --reload"
+    ports:
+      - "8000:8000"
+
+  backend:
+    image: gradle:8.14.0-jdk21
+    working_dir: /workspace/projects/sample-service/backend
+    volumes:
+      - ../../:/workspace
+    command: ["gradle", "--no-daemon", "bootRun"]
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ai-server
+
+  frontend:
+    image: node:20-bookworm
+    working_dir: /workspace/projects/sample-service/frontend
+    volumes:
+      - ../../:/workspace
+    command: ["sh", "-lc", "npm install && npm run dev -- --host 0.0.0.0 --port 5173"]
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend

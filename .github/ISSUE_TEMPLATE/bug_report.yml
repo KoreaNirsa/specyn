@@ -1,0 +1,47 @@
+name: Bug report
+description: 실행 문제나 예상과 다른 동작을 제보합니다.
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 요약
+      description: 어떤 문제가 발생했는지 적어 주세요.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 실행 환경
+      description: 예) Windows 11 / PowerShell, macOS / zsh, Ubuntu / bash
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 재현 절차
+      description: 실행한 명령과 순서를 적어 주세요.
+      placeholder: |
+        1. python scripts/specyn_tasks.py doctor
+        2. python scripts/specyn_tasks.py sample-flow
+        3. python scripts/specyn_tasks.py dev
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대한 결과
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 실제 결과
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 로그 / 스크린샷
+      description: 에러 로그나 스크린샷을 붙여 주세요.

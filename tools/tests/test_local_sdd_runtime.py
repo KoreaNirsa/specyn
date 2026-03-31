@@ -16,8 +16,8 @@ def test_local_runtime_generates_repo_artifacts(monkeypatch, tmp_path: Path) -> 
 
     monkeypatch.setattr(prompt_compiler, "AGENT_DIR", Path("agents"))
     monkeypatch.setattr(local_sdd_runtime, "PROMPT_ROOT_DIR", tmp_path / ".specyn" / "prompts")
-    monkeypatch.setattr(local_sdd_runtime, "GENERATED_DOCS_DIR", tmp_path / "docs" / "generated")
-    monkeypatch.setattr(local_sdd_runtime, "GENERATED_AI_SERVER_DIR", tmp_path / "ai-server" / "app" / "generated")
+    monkeypatch.setattr(local_sdd_runtime, "GENERATED_DOCS_DIR", Path("docs") / "generated")
+    monkeypatch.setattr(local_sdd_runtime, "GENERATED_AI_SERVER_DIR", Path("ai-server") / "app" / "generated")
 
     runtime = LocalSddRuntime(output_root=tmp_path)
     result = runtime.execute(
@@ -74,7 +74,7 @@ def test_local_runtime_generates_repo_artifacts(monkeypatch, tmp_path: Path) -> 
 
     generated_doc_text = generated_doc.read_text(encoding="utf-8")
     assert 'sample-service CRUD 데모 요약' in generated_doc_text
-    assert 'http://localhost:5173/generated/sample-service' in generated_doc_text
+    assert 'http://localhost:5173' in generated_doc_text
 
     openapi_payload = yaml.safe_load(openapi_doc.read_text(encoding="utf-8"))
     assert openapi_payload["openapi"] == "3.1.0"

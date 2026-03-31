@@ -1,0 +1,22 @@
+name: Use case / showcase
+description: 실제 도입 사례, 샘플 spec, 데모 아이디어를 공유합니다.
+title: "[Use case] "
+labels: [question]
+body:
+  - type: textarea
+    id: use_case
+    attributes:
+      label: 사용 사례
+      description: 어떤 팀/도메인/문제를 풀고 싶은지 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: spec_shape
+    attributes:
+      label: 기대하는 spec bundle 형태
+      description: product/api/test/review/agent 관점에서 어떤 구성이 필요한지 적어 주세요.
+  - type: textarea
+    id: why_specyn
+    attributes:
+      label: 왜 Specyn이 잘 맞는지
+      description: 기존 도구보다 기대하는 장점을 적어 주세요.

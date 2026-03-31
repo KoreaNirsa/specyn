@@ -5,20 +5,12 @@ from tools.spec_loader import load_spec_bundle
 from tools.validators import validate_bundle
 
 
-def test_example_bundle_is_valid() -> None:
-    bundle = load_spec_bundle(Path("specs/examples/todo-service"))
-    issues = validate_bundle(bundle)
-
-    assert issues == []
-
-
-
-
 def test_sample_service_bundle_is_valid() -> None:
     bundle = load_spec_bundle(Path("specs/projects/sample-service"))
     issues = validate_bundle(bundle)
 
     assert issues == []
+
 
 def test_validate_bundle_fails_when_agent_definition_is_missing(
     tmp_path: Path, monkeypatch
@@ -34,7 +26,7 @@ def test_validate_bundle_fails_when_agent_definition_is_missing(
 
     monkeypatch.setattr("tools.validators.AGENTS_DIR", shadow_dir)
 
-    bundle = load_spec_bundle(Path("specs/examples/todo-service"))
+    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
     issues = validate_bundle(bundle)
 
     assert any(
@@ -44,15 +36,24 @@ def test_validate_bundle_fails_when_agent_definition_is_missing(
 
 
 def test_validate_bundle_fails_on_invalid_feedback_loop_order(tmp_path: Path) -> None:
-    source_dir = Path("specs/examples/todo-service")
-    target_dir = tmp_path / "todo-service"
+    source_dir = Path("specs/projects/sample-service")
+    target_dir = tmp_path / "sample-service"
     shutil.copytree(source_dir, target_dir)
 
     agent_path = target_dir / "agent.md"
     content = agent_path.read_text(encoding="utf-8")
     content = content.replace(
-        """  - name: design-frontend-ux-sync\n    trigger_after: frontend\n    agents:\n      - design\n      - frontend\n""",
-        """  - name: invalid-design-frontend-loop\n    trigger_after: design\n    agents:\n      - frontend\n""",
+        """  - name: design-frontend-ux-sync
+    trigger_after: frontend
+    agents:
+      - design
+      - frontend
+""",
+        """  - name: invalid-design-frontend-loop
+    trigger_after: design
+    agents:
+      - frontend
+""",
     )
     agent_path.write_text(content, encoding="utf-8")
 

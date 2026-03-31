@@ -1,0 +1,29 @@
+name: Feature request
+description: 새 기능이나 개선 아이디어를 제안합니다.
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 해결하고 싶은 문제
+      description: 어떤 pain point를 줄이고 싶은지 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 제안 내용
+      description: 기대하는 기능이나 동작을 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: 예상 영향 범위
+      description: spec / agent / docs / runtime / sample 중 어디에 영향이 있는지 적어 주세요.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 고려한 대안
+      description: 다른 접근이나 우회 방법이 있었다면 적어 주세요.

@@ -52,22 +52,22 @@ specs/projects/sample-service
 └── agent.md
 ```
 
-예제는 `specs/examples/todo-service`에서 바로 확인하실 수 있습니다.
+실행 가능한 reference sample은 `specs/projects/sample-service`에서 바로 확인하실 수 있습니다.
 
 ## 6. 새 spec bundle 생성하기
 
 ### Linux / macOS
 
 ```bash
-python3 specyn.py init-spec   --project-id sample-service   --output-dir specs/projects/sample-service
+python3 specyn.py init-spec   --project-id my-service   --output-dir specs/projects/my-service
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
 python specyn.py init-spec `
-  --project-id sample-service `
-  --output-dir specs/projects/sample-service
+  --project-id my-service `
+  --output-dir specs/projects/my-service
 ```
 
 ## 7. 실행 전 검증하기
@@ -98,7 +98,7 @@ python specyn.py validate --spec-dir specs/projects/sample-service
 - `product.md`를 충분히 다듬은 뒤 다른 spec를 쓰면 수정 비용이 줄어듭니다.
 - `api.md`에 구조 규칙을 녹여두면 Backend/Review 단계가 안정적입니다.
 - `agent.md`의 feedback loop는 적을수록 좋고, 필요한 경계에만 두는 편이 낫습니다.
-- 예제 Todo에 과적합하지 말고 도메인 중립적인 규칙을 유지해 보시는 것이 좋습니다.
+- sample-service에 과적합하지 말고 도메인 중립적인 규칙을 유지해 보시는 것이 좋습니다.
 
 ## 10. 함께 보면 좋은 문서
 

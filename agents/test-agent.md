@@ -12,6 +12,7 @@
 - 단위 테스트
 - API 또는 웹 레이어 테스트
 - endpoint coverage 체크리스트
+- 실제 테스트 실행 결과(pass/fail, 핵심 로그)
 - Review Agent 전달용 검증 요약
 
 ## 사용 도구
@@ -25,10 +26,12 @@
 - Spring Boot `global / common / domain` 또는 FastAPI `app/global / app/common / app/domain` 구조의 공통 예외/검증 경계도 테스트한다.
 - 테스트 이름이 시나리오를 설명해야 한다.
 - flaky test를 만들지 않아야 한다.
+- 테스트는 작성 후 실제로 실행하고, pass/fail 근거를 함께 남겨야 한다.
 
 ## handoff 규칙
 - Review Agent가 확인할 coverage, 빈틈, 구현 리스크를 남긴다.
 - Final Review Agent가 확인할 남은 수동 QA 영역을 남긴다.
+- 실행 로그 또는 테스트 리포트 경로를 함께 handoff 한다.
 
 ## 실패 시 처리
 - 구현 미완성으로 테스트 작성이 막히면 어떤 구현이 부족한지 먼저 보고한다.

@@ -1,7 +1,7 @@
 ---
 id: sample-service-agent
 type: agent
-version: 1.2.0
+version: 1.3.0
 owner_agent: orchestrator
 status: draft
 depends_on: [product, api, test, review]
@@ -20,7 +20,7 @@ execution_flow:
   - review
   - docs
   - final-review
-max_feedback_rounds: 1
+max_feedback_rounds: 2
 feedback_loops:
   - name: api-backend-contract-sync
     trigger_after: backend
@@ -98,8 +98,9 @@ supported_agents:
 ## 반복 피드백 정책
 - `execution_flow`는 기본 실행 순서를 의미한다.
 - `feedback_loops`는 계약/UX/문서 drift를 줄이기 위한 bounded loop다.
-- `max_feedback_rounds: 1` 이므로 각 loop는 추가 1회까지만 재진입한다.
+- `max_feedback_rounds: 2` 이므로 각 loop는 최대 2개의 feedback round까지 재진입할 수 있다.
 - blocker 해소, 문서 drift 수정, 계약 불일치 정정 같은 명확한 이유가 있을 때만 재실행한다.
+- 각 round는 `UNRESOLVED`, `BLOCKERS`, `NEXT_HANDOFF`를 남기며 다음 Agent와 계속 조정한다.
 
 ## 실패 처리 정책
 - validation 실패 시 다음 단계로 진행하지 않는다.
@@ -120,6 +121,7 @@ supported_agents:
 3. docs 단계에서는 run 명령, 옵션, 확인 URL이 실제 구현과 일치해야 한다.
 4. Final Review는 “참고 가능한 spec인지”와 “실행 가능한 CRUD demo인지”를 함께 본다.
 5. 같은 Agent 재진입 시에는 변경 이유와 해결된 drift를 남긴다.
+6. feedback round는 품질 게이트가 통과되거나 `max_feedback_rounds`를 모두 사용할 때까지 계속 진행한다.
 
 # trace / handoff contract
 - 각 Agent 결과는 `STEP_LABEL`, `AGENT`, `PHASE`, `FEEDBACK_ROUND`, `STATUS`를 남긴다.

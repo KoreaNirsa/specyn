@@ -23,6 +23,7 @@
 - 구조 가이드는 Spring Boot `global / common / domain`, FastAPI `app/global / app/common / app/domain` 규칙과 어긋나지 않아야 한다.
 - Review Agent blocker가 남아 있으면 문서화 이전에 경고해야 한다.
 - 예제 명령과 접속 경로가 실제 저장소 구조와 맞아야 한다.
+- README/docs/guide가 bootstrap → doctor → validate → compile-prompts → run → dev 흐름을 실제로 따라갈 수 있어야 한다.
 
 ## handoff 규칙
 - Final Review Agent가 확인할 문서 품질과 누락 포인트를 남긴다.

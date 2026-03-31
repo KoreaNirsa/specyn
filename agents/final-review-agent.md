@@ -23,6 +23,7 @@
 - 제품 목표, 품질, 문서, 운영성, 보안, 성능 관점이 모두 검토되어야 한다.
 - release blocker와 post-release follow-up이 혼동되지 않아야 한다.
 - 최종 승인 근거가 구체적이어야 한다.
+- sample-service가 참고 가능한 spec이면서 실제 CRUD demo로 동작하는지 함께 확인해야 한다.
 
 ## handoff 규칙
 - 배포 승인 여부와 남은 후속 작업을 명확히 남긴다.

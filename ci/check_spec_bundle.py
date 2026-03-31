@@ -9,7 +9,7 @@ from tools.validators import validate_bundle
 
 
 def main() -> int:
-    bundle = load_spec_bundle(ROOT / "specs/examples/todo-service")
+    bundle = load_spec_bundle(ROOT / "specs/projects/sample-service")
     issues = validate_bundle(bundle)
 
     if issues:

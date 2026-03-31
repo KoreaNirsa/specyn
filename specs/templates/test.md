@@ -1,7 +1,7 @@
 ---
 id: {{project_id}}-test
 type: test
-version: 1.1.0
+version: 1.2.0
 owner_agent: test
 status: draft
 depends_on: [api]
@@ -34,6 +34,7 @@ depends_on: [api]
 - endpoint coverage 체크리스트
 - 실패 시 수정이 필요한 구현 포인트
 - 수동 QA가 필요한 항목
+- 실제 실행 증거(pass/fail, 로그, 캡처 요약)
 
 # 실행 규칙
 1. `api.md`의 모든 endpoint를 최소 1회 이상 검증한다.
@@ -41,12 +42,14 @@ depends_on: [api]
 3. HTTP 상태와 body assertion을 함께 수행한다.
 4. 테스트 이름은 시나리오를 설명해야 한다.
 5. flaky test를 만들지 않는다.
+6. 테스트는 작성 후 실제로 실행하고 결과를 남긴다.
 
 # Validation 기준
 - endpoint coverage 100%
 - 400/404/기타 명세된 예외 케이스 포함
 - 정상/실패 시나리오 모두 존재
 - assertion이 상태코드와 응답 본문을 함께 검증
+- 실제 실행 가능한 자동화 테스트가 최소 1개 이상 존재
 
 # Prompt
 ## Role
@@ -58,6 +61,7 @@ depends_on: [api]
 3. success/failure/validation/not-found를 모두 다룬다.
 4. 필요하면 프론트엔드 주요 사용자 흐름 smoke test도 제안한다.
 5. 다음 Review Agent가 참고할 coverage와 리스크를 함께 남긴다.
+6. 테스트 파일과 실행 결과를 함께 handoff 한다.
 
 ## Format
 다음 순서로 출력한다.

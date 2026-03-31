@@ -5,18 +5,18 @@ from tools.spec_loader import load_spec_bundle
 
 
 def test_build_project_blueprint_extracts_endpoint_and_examples() -> None:
-    bundle = load_spec_bundle(Path("specs/examples/todo-service"))
+    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
 
     blueprint = build_project_blueprint(
-        project_id="todo-service",
+        project_id="sample-service",
         bundle=bundle,
         rag_enabled=False,
     )
 
-    assert blueprint.slug == "todo-service"
-    assert blueprint.package_slug == "todo_service"
+    assert blueprint.slug == "sample-service"
+    assert blueprint.package_slug == "sample_service"
     assert len(blueprint.endpoints) == 5
-    assert blueprint.endpoints[0].path == "/api/v1/todos"
-    assert blueprint.request_example["title"] == "문서 작성"
-    assert blueprint.response_example["status"] == "PENDING"
+    assert blueprint.endpoints[0].path == "/api/v1/tasks"
+    assert blueprint.request_example["title"] == "README 업데이트"
+    assert blueprint.response_example["items"][0]["status"] == "PENDING"
     assert blueprint.execution_flow[0] == "planner"

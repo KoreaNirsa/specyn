@@ -5,7 +5,7 @@ from tools.spec_loader import load_spec_bundle
 
 
 def test_resolve_agent_flow_uses_agent_spec_execution_flow() -> None:
-    bundle = load_spec_bundle(Path("specs/examples/todo-service"))
+    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
 
     flow = resolve_agent_flow(bundle, rag_enabled=False)
 
@@ -25,7 +25,7 @@ def test_resolve_agent_flow_uses_agent_spec_execution_flow() -> None:
         "docs",
         "final-review",
     ]
-    assert flow.max_feedback_rounds == 1
+    assert flow.max_feedback_rounds == 2
     assert [loop.name for loop in flow.feedback_loops] == [
         "api-backend-contract-sync",
         "design-frontend-ux-sync",
@@ -35,7 +35,7 @@ def test_resolve_agent_flow_uses_agent_spec_execution_flow() -> None:
 
 
 def test_resolve_agent_flow_inserts_rag_after_planner_when_enabled() -> None:
-    bundle = load_spec_bundle(Path("specs/examples/todo-service"))
+    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
 
     flow = resolve_agent_flow(bundle, rag_enabled=True)
 
@@ -43,7 +43,7 @@ def test_resolve_agent_flow_inserts_rag_after_planner_when_enabled() -> None:
 
 
 def test_build_execution_plan_expands_bounded_feedback_loops() -> None:
-    bundle = load_spec_bundle(Path("specs/examples/todo-service"))
+    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
 
     execution_plan = build_execution_plan(bundle, rag_enabled=False)
     labels = [step.label for step in execution_plan]
@@ -56,9 +56,15 @@ def test_build_execution_plan_expands_bounded_feedback_loops() -> None:
         "backend",
         "api",
         "backend",
+        "api",
+        "backend",
         "frontend",
         "design",
         "frontend",
+        "design",
+        "frontend",
+        "dba",
+        "backend",
         "dba",
         "backend",
         "dba",
@@ -71,9 +77,11 @@ def test_build_execution_plan_expands_bounded_feedback_loops() -> None:
         "docs",
         "review",
         "docs",
+        "review",
+        "docs",
         "final-review",
     ]
     assert labels[4].endswith("api-api-backend-contract-sync-r1")
-    assert labels[5].endswith("backend-api-backend-contract-sync-r1")
-    assert labels[19].endswith("review-review-docs-release-sync-r1")
-    assert labels[20].endswith("docs-review-docs-release-sync-r1")
+    assert labels[6].endswith("api-api-backend-contract-sync-r2")
+    assert labels[25].endswith("review-review-docs-release-sync-r1")
+    assert labels[27].endswith("review-review-docs-release-sync-r2")

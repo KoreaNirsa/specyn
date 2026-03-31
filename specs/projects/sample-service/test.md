@@ -1,7 +1,7 @@
 ---
 id: sample-service-test
 type: test
-version: 1.2.0
+version: 1.3.0
 owner_agent: test
 status: draft
 depends_on: [api]
@@ -37,6 +37,7 @@ sample-service generated CRUD 구현이 제품 요구사항과 API 계약을 만
 - endpoint coverage 체크리스트
 - 수동 QA가 필요한 generated UI 확인 포인트
 - 실패 시 수정이 필요한 구현 포인트
+- 실제 실행 로그 또는 pass/fail evidence
 
 # 실행 규칙
 1. 모든 endpoint를 최소 1회 이상 검증한다.
@@ -44,6 +45,7 @@ sample-service generated CRUD 구현이 제품 요구사항과 API 계약을 만
 3. 상태코드와 응답 본문을 함께 검증한다.
 4. 삭제 성공 후에는 204와 이후 404 재조회를 함께 본다.
 5. flaky test를 만들지 않는다.
+6. 테스트는 작성만 하지 말고 실제로 실행한 결과를 남긴다.
 
 # Validation 기준
 - endpoint coverage 100%
@@ -61,6 +63,7 @@ sample-service generated CRUD 구현이 제품 요구사항과 API 계약을 만
 3. generated frontend page에서 수동으로 확인할 UX 흐름도 함께 정리한다.
 4. Review Agent가 바로 사용할 coverage와 리스크를 남긴다.
 5. CI에 올리기 쉬운 deterministic 시나리오를 우선한다.
+6. 테스트 파일과 실행 결과를 함께 handoff 한다.
 
 ## Format
 1. 작업 요약

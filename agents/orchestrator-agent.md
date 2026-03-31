@@ -24,6 +24,7 @@
 - 필수 spec가 누락되면 실행을 중단해야 한다.
 - blocker 존재 시 Docs/Final Review 단계 이전에 차단해야 한다.
 - `agent.md`의 `execution_flow`와 실제 실행 흐름이 일치해야 한다.
+- feedback loop는 품질 게이트가 통과되거나 설정된 최대 round를 소진할 때까지 계속 진행해야 한다.
 
 ## feedback round 원칙
 - 동일 Agent의 이전 결과가 있으면 이번 실행을 bounded feedback round로 간주한다.
