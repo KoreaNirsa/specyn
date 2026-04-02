@@ -68,6 +68,6 @@ docker compose -f docker-compose.local.yml ps
 
 Expected sample URLs:
 
-- `http://localhost:5173`
+- `http://localhost:3000`
 - `http://localhost:8080/api/v1/generated/sample-service/summary`
 - `http://localhost:8000/generated/sample-service/context`

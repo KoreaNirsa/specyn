@@ -8,6 +8,7 @@ import inspect
 import os
 from pathlib import Path
 import shlex
+from textwrap import dedent
 from typing import Any
 
 from app.core.config import Settings
@@ -75,6 +76,7 @@ class CodexRunner:
 
         workspace_path = Path(workspace).resolve()
         workspace_path.mkdir(parents=True, exist_ok=True)
+        self._prepare_workspace_scaffold(workspace_path)
         snapshot_dir = workspace_path / ".specyn"
         snapshot_dir.mkdir(parents=True, exist_ok=True)
         (snapshot_dir / "last_codex_prompt.md").write_text(prompt, encoding="utf-8")
@@ -151,6 +153,81 @@ class CodexRunner:
             f"{last_error}\n[codex-fallback-failed] attempted models: {attempted}",
             [],
         )
+
+    def _prepare_workspace_scaffold(self, workspace_path: Path) -> None:
+        """
+        Keep the generated workspace aligned with the CLI runtime contract.
+
+        Args:
+            workspace_path: Codex가 직접 작업하는 워크스페이스 경로다.
+        """
+        compose_file = workspace_path / "docker-compose.local.yml"
+        if not compose_file.exists():
+            compose_file.write_text(
+                self._build_project_compose(workspace_path.name),
+                encoding="utf-8",
+            )
+
+    def _build_project_compose(self, project_id: str) -> str:
+        """
+        Provide the standard sample runtime compose file expected by `sample-up`.
+
+        Args:
+            project_id: 현재 생성 대상 프로젝트 ID다.
+        """
+        return dedent(
+            f"""
+            name: {project_id}
+
+            services:
+              ai-server:
+                image: python:3.11-slim
+                working_dir: /workspace
+                env_file:
+                  - ../../.env
+                volumes:
+                  - ../../:/workspace
+                command:
+                  [
+                    "bash",
+                    "-lc",
+                    "python -m uvicorn app.main:app --app-dir projects/{project_id}/ai-server --host 0.0.0.0 --port 8000 --reload",
+                  ]
+                ports:
+                  - "8000:8000"
+
+              backend:
+                image: gradle:8.14.0-jdk21
+                working_dir: /workspace/projects/{project_id}/backend
+                env_file:
+                  - ../../.env
+                volumes:
+                  - ../../:/workspace
+                command: ["gradle", "--no-daemon", "bootRun"]
+                environment:
+                  SERVER_PORT: "8080"
+                  AI_SERVER_URL: http://ai-server:8000
+                ports:
+                  - "8080:8080"
+                depends_on:
+                  - ai-server
+
+              frontend:
+                image: node:20-bookworm
+                working_dir: /workspace/projects/{project_id}/frontend
+                stdin_open: true
+                tty: true
+                env_file:
+                  - ../../.env
+                volumes:
+                  - ../../:/workspace
+                command: ["sh", "-lc", "npm install && npm run dev -- --host 0.0.0.0 --port 5173"]
+                ports:
+                  - "5173:5173"
+                depends_on:
+                  - backend
+            """
+        ).strip() + "\n"
 
     async def _drain_stream(
         self,

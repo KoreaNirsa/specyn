@@ -20,7 +20,7 @@ execution_flow:
   - review
   - docs
   - final-review
-max_feedback_rounds: 2
+max_feedback_rounds: 999
 feedback_loops:
   - name: api-backend-contract-sync
     trigger_after: backend

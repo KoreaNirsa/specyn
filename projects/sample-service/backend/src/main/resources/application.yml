@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: sample-service-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:sample_service;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.h2.Driver}
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+app:
+  task:
+    repository: ${APP_TASK_REPOSITORY:jdbc}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+server:
+  port: ${SERVER_PORT:8080}

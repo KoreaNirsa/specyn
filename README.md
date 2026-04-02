@@ -57,7 +57,7 @@ python specyn.py sample-up -d
 
 Sample-service URLs:
 
-- Frontend: `http://localhost:5173`
+- Frontend: `http://localhost:3000`
 - Backend summary: `http://localhost:8080/api/v1/generated/sample-service/summary`
 - AI Server context: `http://localhost:8000/generated/sample-service/context`
 

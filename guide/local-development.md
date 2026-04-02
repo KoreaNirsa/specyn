@@ -37,7 +37,7 @@ If Docker Desktop is not running, `setup` may still update `.env`, but Docker-ba
 
 ## Sample Stack
 
-- Frontend: `http://localhost:5173`
+- Frontend: `http://localhost:3000`
 - Backend summary: `http://localhost:8080/api/v1/generated/sample-service/summary`
 - AI context: `http://localhost:8000/generated/sample-service/context`
 

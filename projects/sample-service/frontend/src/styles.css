@@ -1,0 +1,251 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #f3efe5;
+  --panel: #fffef9;
+  --ink: #14213d;
+  --muted: #576273;
+  --accent: #fca311;
+  --accent-strong: #f77f00;
+  --danger: #b42318;
+  --danger-soft: #fdecec;
+  --success: #027a48;
+  --success-soft: #e9f8f0;
+  --border: #d8d2c4;
+  --shadow: 0 12px 30px rgba(20, 33, 61, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(252, 163, 17, 0.25), transparent 35%),
+    radial-gradient(circle at 85% 20%, rgba(20, 33, 61, 0.12), transparent 40%),
+    var(--bg);
+  min-height: 100vh;
+}
+
+h1,
+h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  margin: 0;
+}
+
+.app-shell {
+  width: min(1120px, 100% - 2rem);
+  margin: 2rem auto;
+  display: grid;
+  grid-template-columns: 1.05fr 1fr 1fr;
+  gap: 1rem;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 1rem;
+}
+
+.panel-description {
+  margin: 0.5rem 0 1rem;
+  color: var(--muted);
+}
+
+.task-form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+input,
+textarea,
+button {
+  font: inherit;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  background: #fff;
+}
+
+input:focus,
+textarea:focus,
+button:focus-visible,
+.task-select:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+button {
+  border: 1px solid #c6b99f;
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  background: linear-gradient(180deg, #fff 0%, #f8f2e7 100%);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+button:hover:enabled {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(20, 33, 61, 0.12);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.feedback-zone {
+  margin-top: 1rem;
+  min-height: 2.1rem;
+}
+
+.feedback {
+  margin: 0.25rem 0;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+}
+
+.feedback.success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.feedback.error {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+
+.state {
+  margin: 0.5rem 0;
+  border-radius: 10px;
+  padding: 0.7rem 0.75rem;
+}
+
+.state-loading {
+  background: #ecf4ff;
+}
+
+.state-empty {
+  background: #f6f6f6;
+  color: #4d5560;
+}
+
+.state-error {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.task-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.task-list li {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.55rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.task-list li.selected {
+  border-color: var(--accent-strong);
+  background: #fff7eb;
+}
+
+.task-select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.task-title {
+  font-weight: 600;
+}
+
+.task-status {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.24rem 0.5rem;
+  border-radius: 999px;
+}
+
+.status-pending {
+  background: #fff1cf;
+  color: #7a4f00;
+}
+
+.status-done {
+  background: #dff8ea;
+  color: #036645;
+}
+
+.task-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.task-actions button {
+  flex: 1;
+}
+
+.task-detail {
+  margin: 0.75rem 0 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.task-detail div {
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 0.45rem;
+}
+
+.task-detail dt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.task-detail dd {
+  margin: 0.3rem 0 0;
+  word-break: break-word;
+}
+
+@media (max-width: 1040px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+}

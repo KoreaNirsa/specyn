@@ -88,6 +88,6 @@ These are local runtime artifacts and should not be committed:
 | Dashboard Frontend | `4173` | `http://localhost:4173` |
 | Dashboard Backend | `8180` | `http://localhost:8180/api/v1/spec-runs/health` |
 | Dashboard AI Server | `8100` | `http://localhost:8100/health` |
-| sample-service Frontend | `5173` | `http://localhost:5173` |
+| sample-service Frontend | `3000` | `http://localhost:3000` |
 | sample-service Backend | `8080` | `http://localhost:8080/api/v1/generated/sample-service/summary` |
 | sample-service AI Server | `8000` | `http://localhost:8000/generated/sample-service/context` |

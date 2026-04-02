@@ -25,7 +25,7 @@ Docker Desktop 이 꺼져 있으면 1단계에서 `.env` 저장까지 먼저 끝
 - Dashboard: `http://localhost:4173`
 - Dashboard Backend: `http://localhost:8180`
 - Dashboard AI Server: `http://localhost:8100`
-- sample-service Frontend: `http://localhost:5173`
+- sample-service Frontend: `http://localhost:3000`
 - Backend summary: `http://localhost:8080/api/v1/generated/sample-service/summary`
 - AI context: `http://localhost:8000/generated/sample-service/context`
 
