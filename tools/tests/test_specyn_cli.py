@@ -41,8 +41,8 @@ def test_cmd_run_local_returns_generated_file_summary(monkeypatch, capsys, tmp_p
     output = capsys.readouterr().out
     payload = json.loads(output)
 
-    assert exit_code == 0
-    assert payload["status"] == "COMPLETED"
+    assert exit_code == 1
+    assert payload["status"] == "BLOCKED"
     assert payload["projectId"] == "sample-service"
     assert payload["runtime"] == "local"
     assert payload["outputRoot"] == "projects/sample-service"

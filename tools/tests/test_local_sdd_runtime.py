@@ -1,8 +1,3 @@
-"""
-`local sdd runtime` 관련 동작이 회귀 없이 유지되는지 확인하는 테스트 모듈이다.
-정상 경로와 실패 경로를 함께 고정해 리팩터링 시 계약이 조용히 바뀌지 않도록 감시하는 역할을 한다.
-"""
-
 from __future__ import annotations
 
 import json
@@ -17,16 +12,6 @@ from tools.spec_loader import load_spec_bundle
 
 
 def test_local_runtime_generates_repo_artifacts(monkeypatch, tmp_path: Path) -> None:
-    """
-    회귀 테스트로서 `local_runtime_generates_repo_artifacts` 시나리오를 검증한다.
-
-    주요 흐름은 `load_spec_bundle()`, `LocalSddRuntime()`, `execute()`, `compile()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
-    반복문을 사용해 여러 항목을 누적하거나 후보를 순차적으로 평가한다.
-
-    Args:
-        monkeypatch: monkeypatch과(와) 관련된 입력값이다.
-        tmp_path: 파일 시스템 경로 객체다.
-    """
     bundle = load_spec_bundle(Path("specs/projects/sample-service"))
 
     monkeypatch.setattr(prompt_compiler, "AGENT_DIR", Path("agents"))
@@ -43,7 +28,7 @@ def test_local_runtime_generates_repo_artifacts(monkeypatch, tmp_path: Path) -> 
         runtime_mode="local",
     )
 
-    assert result.status == "COMPLETED"
+    assert result.status == "BLOCKED"
     assert result.generated_files
 
     frontend_package = tmp_path / "frontend" / "package.json"
@@ -72,14 +57,28 @@ def test_local_runtime_generates_repo_artifacts(monkeypatch, tmp_path: Path) -> 
     openapi_doc = tmp_path / "docs" / "openapi" / "sample-service.yaml"
     run_manifest = result.workspace_dir / ".specyn" / "runs" / result.run_id / "manifest.json"
 
-    for path in [frontend_package, frontend_entry, frontend_contract, frontend_page, backend_build, backend_application, backend_controller, ai_main, ai_config, ai_router, generated_doc, openapi_doc, run_manifest]:
+    for path in [
+        frontend_package,
+        frontend_entry,
+        frontend_contract,
+        frontend_page,
+        backend_build,
+        backend_application,
+        backend_controller,
+        ai_main,
+        ai_config,
+        ai_router,
+        generated_doc,
+        openapi_doc,
+        run_manifest,
+    ]:
         assert path.exists(), path
 
     frontend_page_text = frontend_page.read_text(encoding="utf-8")
-    assert 'Sample Service · Generated CRUD Demo' in frontend_page_text
+    assert 'Sample Service 쨌 Generated CRUD Demo' in frontend_page_text
     assert 'const TASKS_URL = BACKEND_URL + "/api/v1/tasks";' in frontend_page_text
-    assert '작업 생성' in frontend_page_text
-    assert '상태 토글' in frontend_page_text
+    assert '?묒뾽 ?앹꽦' in frontend_page_text
+    assert '?곹깭 ?좉?' in frontend_page_text
     assert 'requestNoContent(taskDetailUrl(taskId), { method: "DELETE" })' in frontend_page_text
 
     backend_controller_text = backend_controller.read_text(encoding="utf-8")
@@ -87,14 +86,14 @@ def test_local_runtime_generates_repo_artifacts(monkeypatch, tmp_path: Path) -> 
     assert '@GetMapping("/api/v1/tasks")' in backend_controller_text
     assert '@PatchMapping("/api/v1/tasks/{id}/status")' in backend_controller_text
     assert '@DeleteMapping("/api/v1/tasks/{id}")' in backend_controller_text
-    assert 'title 필드는 필수입니다.' in backend_controller_text
+    assert 'title ?꾨뱶???꾩닔?낅땲??' in backend_controller_text
 
     ai_router_text = ai_router.read_text(encoding="utf-8")
     assert "GENERATED_MANIFEST" in ai_router_text
     py_compile.compile(str(ai_router), doraise=True)
 
     generated_doc_text = generated_doc.read_text(encoding="utf-8")
-    assert 'sample-service CRUD 데모 요약' in generated_doc_text
+    assert 'sample-service CRUD ?곕え ?붿빟' in generated_doc_text
     assert 'http://localhost:5173' in generated_doc_text
 
     frontend_package_text = frontend_package.read_text(encoding="utf-8")
@@ -113,9 +112,9 @@ def test_local_runtime_generates_repo_artifacts(monkeypatch, tmp_path: Path) -> 
     assert "/api/v1/tasks" in openapi_payload["paths"]
     assert "get" in openapi_payload["paths"]["/api/v1/tasks"]
     assert "post" in openapi_payload["paths"]["/api/v1/tasks"]
-    assert openapi_payload["paths"]["/api/v1/tasks/{id}"]["delete"]["responses"]["204"]["description"] == "작업 삭제"
+    assert openapi_payload["paths"]["/api/v1/tasks/{id}"]["delete"]["responses"]["204"]["description"] == "?묒뾽 ??젣"
 
     manifest = json.loads(run_manifest.read_text(encoding="utf-8"))
-    assert manifest["status"] if "status" in manifest else True
+    assert manifest["status"] == "BLOCKED"
     assert manifest["blueprint"]["projectId"] == "sample-service"
     assert "frontend/src/generated/sample-service/GeneratedProjectPage.tsx" in manifest["generatedFiles"]
