@@ -1,0 +1,40 @@
+name: Python CI
+
+on:
+  pull_request:
+  push:
+    paths:
+      - 'dashboard/ai-server/**'
+      - 'tools/**'
+      - 'scripts/**'
+      - 'ci/**'
+      - 'specyn.py'
+      - 'pyproject.toml'
+      - 'pytest.ini'
+      - '.github/workflows/ai-server-ci.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r dashboard/ai-server/requirements.txt -r dashboard/ai-server/requirements-dev.txt -r tools/requirements.txt
+
+      - name: Validate spec bundle
+        run: python ci/check_spec_bundle.py
+
+      - name: Check Python formatting
+        run: python -m ruff format --check dashboard/ai-server tools ci scripts specyn.py
+
+      - name: Run tests
+        run: python -m pytest dashboard/ai-server/tests tools/tests scripts/tests -q
