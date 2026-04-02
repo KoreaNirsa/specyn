@@ -1,58 +1,62 @@
 ---
 id: sample-service-review
 type: review
-version: 1.4.0
+version: 1.4.1
 owner_agent: review
 status: draft
 depends_on: [api, test]
 ---
 
 # 목적
-sample-service generated 결과가 reference sample로 충분한지 review 기준을 정의한다.
+sample-service generated 결과가 reference sample로 적합한지 review 기준을 정의한다.
 
 # 입력
-## review 관점
-- contract 일치 여부
-- runtime 실행 가능 여부
-- 문서와 실제 동작의 정합성
-- validation 메시지의 가독성
-- sample-up 포트 계약과 실제 compose 결과 일치 여부
-- frontend JSX runtime 계약과 실제 bundle 결과 일치 여부
+## 구조 규칙
+- backend는 `global / common / domain` 계층을 유지해야 한다.
+- Controller는 비즈니스 로직을 직접 담지 않고 application 계층을 호출해야 한다.
+- DTO와 domain 모델은 역할이 분리되어야 한다.
+- 공통 예외 응답 구조는 모든 실패 케이스에서 일관돼야 한다.
 
-## blocker 예시
-- CRUD가 끝까지 동작하지 않음
-- contract와 구현이 불일치함
-- runtime 확인 절차가 문서와 다름
-- sample-up 안내 URL이 실제 노출 포트와 달라 기본 접속이 실패함
-- frontend bundle이 `React is not defined`로 초기 렌더링에 실패함
+## 보안 규칙
+- 입력 검증 누락은 blocker로 분류한다.
+- 민감 정보 로그 노출은 blocker로 분류한다.
+- 내부 구현 세부 정보를 외부 오류 메시지로 그대로 노출하면 major로 분류한다.
+- 인증이 없는 로컬 샘플이라도 허용 상태값 검증은 반드시 유지해야 한다.
+
+## 테스트 규칙
+- 주요 성공 시나리오와 실패 시나리오가 모두 존재해야 한다.
+- 400, 404, 204 케이스가 테스트 또는 수동 검증 체크리스트에 포함돼야 한다.
+- frontend smoke에서 첫 화면 로드와 task 생성 흐름이 확인돼야 한다.
+- flaky test 가능성이 있으면 수정 방향을 리뷰에 남겨야 한다.
+
+## 운영 규칙
+- `sample-up` 포트 계약은 frontend `3000`, backend `8080`, ai-server `8000`과 일치해야 한다.
+- 문서, compose, generated runtime 사이에 drift가 있으면 major 이상으로 분류한다.
+- frontend bundle은 `React is not defined` 없이 초기 렌더링되어야 한다.
+- 실행 절차는 runbook만 보고 재현 가능해야 한다.
 
 # 출력
+- overall verdict
 - blocker / major / minor 기준
 - release readiness 판단 기준
 
 # 실행 규칙
-1. 실행 가능성은 미관보다 우선한다.
-2. spec, code, docs drift를 반드시 지적한다.
-3. 위험도에 따라 재현 가능한 runbook이 있어야 한다.
-4. frontend host port가 sample-up 계약과 다르면 최소 major 이상으로 판정한다.
-5. frontend bootstrap 오류는 최소 major 이상으로 판정한다.
+1. blocker는 merge 차단 사유로 명시한다.
+2. 리뷰 결과는 파일 또는 실행 흐름 단위로 추적 가능해야 한다.
+3. spec과 구현이 어긋나면 어느 쪽을 수정해야 하는지 방향을 적는다.
 
 # Validation 기준
-- blocker 기준이 있어야 한다.
-- runtime 확인 항목이 있어야 한다.
-- docs 정합성 검토가 포함되어 있어야 한다.
-- frontend runtime bootstrap 검토가 포함되어 있어야 한다.
+- review 체크리스트는 4개 이상 명시해야 한다.
+- 구조, 보안, 테스트, 운영 관점이 모두 포함돼야 한다.
 
 # Prompt
 ## Role
-당신은 Review Agent다. sample-service를 reference sample 관점에서 검토한다.
+당신은 Review Agent로서 sample-service를 reference sample 관점에서 검토한다.
 
 ## Instructions
 1. blocker, major, minor를 구분한다.
 2. spec과 generated output의 drift를 찾는다.
-3. runtime 확인 절차의 정확성을 본다.
-4. `sample-up`의 frontend host port 계약이 `3000`인지 반드시 검토한다.
-5. frontend bundle이 `React` 전역 누락 없이 초기 렌더링되는지 검토한다.
+3. runtime 확인 결과를 release readiness 판단에 반영한다.
 
 ## Format
 1. overall verdict

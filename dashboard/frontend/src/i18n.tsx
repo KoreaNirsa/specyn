@@ -9,12 +9,14 @@ import {
 
 export type Language = "ko" | "en";
 
-type TranslationValue = string | ((params?: Record<string, string | number>) => string);
+type TranslationParams = Record<string, string | number>;
+type TranslationValue = string | ((params?: TranslationParams) => string);
+type TranslationKey = string;
 
 interface I18nContextValue {
   language: Language;
   setLanguage: (language: Language) => void;
-  t: (key: keyof typeof translations.ko, params?: Record<string, string | number>) => string;
+  t: (key: TranslationKey, params?: TranslationParams) => string;
 }
 
 const STORAGE_KEY = "specyn-dashboard-language";
@@ -69,7 +71,8 @@ const translations = {
     "dashboard.order1": "1. 대시보드에서 sample-service 스펙 번들을 편집합니다.",
     "dashboard.order2": "2. 대시보드에서 에이전트를 실행해 sample-service를 생성합니다.",
     "dashboard.order3": "3. sample-service를 기동하고 생성된 런타임을 검증합니다.",
-    "dashboard.runCount": ({ count }) => `기록된 대시보드 실행 수: ${count}`,
+    "dashboard.runCount": ({ count }: TranslationParams = {}) =>
+      `기록된 대시보드 실행 수: ${count ?? 0}`,
     "editor.eyebrow": "1단계",
     "editor.title": "스펙 번들 편집기",
     "editor.reset": "문서 초기화",
@@ -93,7 +96,8 @@ const translations = {
     "run.promptDrift": "프롬프트 드리프트 감지",
     "run.memorySnapshot": "에이전트 메모리 스냅샷",
     "run.policyGate": "정책 준수 게이트",
-    "run.currentWorkspace": ({ workspace }) => ` 현재 워크스페이스: ${workspace}`,
+    "run.currentWorkspace": ({ workspace }: TranslationParams = {}) =>
+      ` 현재 워크스페이스: ${workspace ?? ""}`,
     "run.errorPrefix": "실행 오류",
     "timeline.eyebrow": "실행 결과",
     "timeline.title": "대시보드 관리 에이전트 타임라인",
@@ -239,7 +243,8 @@ const translations = {
     "dashboard.order1": "1. Edit the sample-service spec bundle in the dashboard.",
     "dashboard.order2": "2. Run agents from the dashboard to generate sample-service.",
     "dashboard.order3": "3. Start sample-service and verify the generated runtime.",
-    "dashboard.runCount": ({ count }) => `Recorded dashboard runs: ${count}`,
+    "dashboard.runCount": ({ count }: TranslationParams = {}) =>
+      `Recorded dashboard runs: ${count ?? 0}`,
     "editor.eyebrow": "Step 1",
     "editor.title": "Spec Bundle Editor",
     "editor.reset": "Reset Docs",
@@ -263,7 +268,8 @@ const translations = {
     "run.promptDrift": "Prompt drift detection",
     "run.memorySnapshot": "Agent memory snapshot",
     "run.policyGate": "Policy compliance gate",
-    "run.currentWorkspace": ({ workspace }) => ` Current workspace: ${workspace}`,
+    "run.currentWorkspace": ({ workspace }: TranslationParams = {}) =>
+      ` Current workspace: ${workspace ?? ""}`,
     "run.errorPrefix": "Run error",
     "timeline.eyebrow": "Execution Result",
     "timeline.title": "Dashboard Managed Agent Timeline",
@@ -360,13 +366,13 @@ const translations = {
     "system.network": "Network Topology (Planned)",
     "system.networkCopy": "Area for dashboard and project runtime topology.",
   },
-} as const;
+} satisfies Record<Language, Record<string, TranslationValue>>;
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 function renderTranslation(
   value: TranslationValue,
-  params?: Record<string, string | number>,
+  params?: TranslationParams,
 ): string {
   if (typeof value === "function") {
     return value(params);

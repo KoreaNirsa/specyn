@@ -38,6 +38,20 @@ LOCAL_GRADLE_VERSION = os.environ.get("SPECYN_GRADLE_VERSION", "8.14")
 LOCAL_GRADLE_DIR = ROOT_DIR / ".specyn" / "tools" / f"gradle-{LOCAL_GRADLE_VERSION}"
 WINDOWS_SHELL_EXTENSIONS = {".cmd", ".bat"}
 DOCKER_VERIFY_SENTINEL = "specyn-codex-verified"
+
+
+def safe_print(message: str) -> None:
+    """Print with a replacement fallback for non-UTF-8 consoles."""
+    try:
+        print(message)
+        return
+    except UnicodeEncodeError:
+        pass
+
+    stream = sys.stdout
+    encoding = getattr(stream, "encoding", None) or "utf-8"
+    fallback = message.encode(encoding, errors="replace").decode(encoding, errors="replace")
+    print(fallback)
 CODEX_OAUTH_CALLBACK_PORT = 1455
 
 
@@ -420,7 +434,7 @@ def print_validation_issues(issues: list[Any]) -> None:
         issues: 순서를 유지하는 목록 입력값이다.
     """
     for issue in issues:
-        print(f"[{issue.level}] {issue.code}: {issue.message}")
+        safe_print(f"[{issue.level}] {issue.code}: {issue.message}")
 
 
 def ensure_env_file() -> Path:
