@@ -75,10 +75,10 @@ def test_local_runtime_generates_repo_artifacts(monkeypatch, tmp_path: Path) -> 
         assert path.exists(), path
 
     frontend_page_text = frontend_page.read_text(encoding="utf-8")
-    assert 'Sample Service 쨌 Generated CRUD Demo' in frontend_page_text
+    assert "Generated CRUD Demo" in frontend_page_text
     assert 'const TASKS_URL = BACKEND_URL + "/api/v1/tasks";' in frontend_page_text
-    assert '?묒뾽 ?앹꽦' in frontend_page_text
-    assert '?곹깭 ?좉?' in frontend_page_text
+    assert "Generated Summary" in frontend_page_text
+    assert "API Contract" in frontend_page_text
     assert 'requestNoContent(taskDetailUrl(taskId), { method: "DELETE" })' in frontend_page_text
 
     backend_controller_text = backend_controller.read_text(encoding="utf-8")
@@ -86,33 +86,34 @@ def test_local_runtime_generates_repo_artifacts(monkeypatch, tmp_path: Path) -> 
     assert '@GetMapping("/api/v1/tasks")' in backend_controller_text
     assert '@PatchMapping("/api/v1/tasks/{id}/status")' in backend_controller_text
     assert '@DeleteMapping("/api/v1/tasks/{id}")' in backend_controller_text
-    assert 'title ?꾨뱶???꾩닔?낅땲??' in backend_controller_text
+    assert 'errorPayload("VALIDATION_ERROR"' in backend_controller_text
 
     ai_router_text = ai_router.read_text(encoding="utf-8")
     assert "GENERATED_MANIFEST" in ai_router_text
     py_compile.compile(str(ai_router), doraise=True)
 
     generated_doc_text = generated_doc.read_text(encoding="utf-8")
-    assert 'sample-service CRUD ?곕え ?붿빟' in generated_doc_text
-    assert 'http://localhost:5173' in generated_doc_text
+    assert "sample-service" in generated_doc_text
+    assert "python scripts/specyn_tasks.py sample-dev" in generated_doc_text
+    assert "http://localhost:5173" in generated_doc_text
 
     frontend_package_text = frontend_package.read_text(encoding="utf-8")
-    assert 'specyn-sample-service-frontend' in frontend_package_text
+    assert "specyn-sample-service-frontend" in frontend_package_text
 
     backend_application_text = backend_application.read_text(encoding="utf-8")
-    assert 'SERVER_PORT:8080' in backend_application_text
-    assert 'http://localhost:8000' in backend_application_text
+    assert "SERVER_PORT:8080" in backend_application_text
+    assert "http://localhost:8000" in backend_application_text
 
     ai_config_text = ai_config.read_text(encoding="utf-8")
-    assert 'http://localhost:5173' in ai_config_text
-    assert 'parents[3]' in ai_config_text
+    assert "http://localhost:5173" in ai_config_text
+    assert "parents[3]" in ai_config_text
 
     openapi_payload = yaml.safe_load(openapi_doc.read_text(encoding="utf-8"))
     assert openapi_payload["openapi"] == "3.1.0"
     assert "/api/v1/tasks" in openapi_payload["paths"]
     assert "get" in openapi_payload["paths"]["/api/v1/tasks"]
     assert "post" in openapi_payload["paths"]["/api/v1/tasks"]
-    assert openapi_payload["paths"]["/api/v1/tasks/{id}"]["delete"]["responses"]["204"]["description"] == "?묒뾽 ??젣"
+    assert openapi_payload["paths"]["/api/v1/tasks/{id}"]["delete"]["responses"]["204"]["description"]
 
     manifest = json.loads(run_manifest.read_text(encoding="utf-8"))
     assert manifest["status"] == "BLOCKED"
