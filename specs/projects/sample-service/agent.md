@@ -1,7 +1,7 @@
 ---
 id: sample-service-agent
 type: agent
-version: 1.4.0
+version: 1.4.1
 owner_agent: orchestrator
 status: draft
 depends_on: [product, api, test, review]
@@ -20,7 +20,7 @@ execution_flow:
   - review
   - docs
   - final-review
-max_feedback_rounds: 999
+max_feedback_rounds: 2
 feedback_loops:
   - name: api-backend-contract-sync
     trigger_after: backend
@@ -75,7 +75,7 @@ sample-service를 생성하기 위한 agent execution flow와 handoff 규칙을 
 - docs
 - final-review
 
-## handoff 원칙
+## handoff 정책
 - API와 backend는 contract를 공유한다.
 - design과 frontend는 UX를 공유한다.
 - review와 docs는 release readiness를 함께 확인한다.
@@ -84,9 +84,9 @@ sample-service를 생성하기 위한 agent execution flow와 handoff 규칙을 
 ## feedback 정책
 - `execution_flow`는 기본 1차 실행 순서를 정의한다.
 - `feedback_loops`는 1차 실행 이후 필요 시 되돌아갈 bounded loop를 정의한다.
-- 현재 sample-service는 완성을 우선하므로 `max_feedback_rounds: 999`를 사용한다.
-- 이는 사실상 step 제한 해제에 가깝게 동작하지만, 서버를 완전히 무한 루프로 두지는 않는다.
-- 사용자가 필요 시 직접 서버를 내리고 실행을 종료할 수 있다.
+- sample-service는 reference sample이므로 `max_feedback_rounds: 2` 범위 안에서만 반복한다.
+- 반복은 drift 해소와 handoff 보강 목적이어야 하며 무한 루프처럼 동작해서는 안 된다.
+- 사용자가 필요 시 직접 재실행할 수 있어야 한다.
 
 # 출력
 - execution flow
@@ -96,28 +96,28 @@ sample-service를 생성하기 위한 agent execution flow와 handoff 규칙을 
 
 # 실행 규칙
 1. `agent.md`는 orchestration의 source of truth다.
-2. feedback loop는 `max_feedback_rounds` 범위 안에서 반복할 수 있다.
-3. sample-service는 완성 우선이므로 step 수보다 unresolved 이슈 해소를 우선한다.
+2. feedback loop는 `max_feedback_rounds` 범위 안에서만 반복할 수 있다.
+3. sample-service는 unresolved 이슈를 줄이는 방향으로 bounded feedback를 수행한다.
 4. docs는 실제 run command와 URL을 반영해야 한다.
-5. frontend agent는 `React.createElement` 사용 여부와 React import/runtime 계약을 같이 맞춰야 한다.
+5. frontend agent는 `React.createElement` 사용 여부와 React import/runtime 계약을 함께 맞춰야 한다.
 
 # Validation 기준
 - 필수 agent가 execution_flow에 포함되어 있어야 한다.
 - feedback_loops와 supported_agents가 정합해야 한다.
 - stop/retry 조건이 정의되어 있어야 한다.
-- 높은 feedback round 설정의 의도가 문서화되어 있어야 한다.
-- frontend bootstrap 계약(`React is not defined` 방지)이 orchestration 수준에서 강조되어 있어야 한다.
+- bounded feedback round 설정이 문서화되어 있어야 한다.
+- frontend bootstrap 계약(`React is not defined` 방지)이 orchestration 관점에서 강조되어 있어야 한다.
 
 # Prompt
 ## Role
-당신은 Orchestrator Agent다. sample-service 생성 흐름을 관리한다.
+당신은 Orchestrator Agent로서 sample-service 생성 흐름을 관리한다.
 
 ## Instructions
 1. execution flow와 feedback loop를 정리한다.
-2. handoff와 validation ownership을 명확히 한다.
+2. handoff와 validation ownership을 명확히 적는다.
 3. runtime 확인까지 이어지는 흐름을 유지한다.
-4. unresolved 이슈가 남아 있으면 높은 feedback round 한도 안에서 해결을 우선한다.
-5. frontend 관련 변경에서는 JSX runtime, React import, bundle bootstrap 오류를 unresolved 항목으로 남기지 않는다.
+4. unresolved 이슈가 남아 있으면 bounded feedback round 안에서 해결을 우선한다.
+5. frontend 변경에서는 JSX runtime, React import, bundle bootstrap 오류를 unresolved 항목으로 남기지 않는다.
 
 ## Format
 1. execution flow
