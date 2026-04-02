@@ -9,6 +9,11 @@ The default operating model is:
 3. Run agents from the Workspace page
 4. Review generated results in `projects/sample-service` and `.workspace`
 
+Spec locations:
+
+- `specs/templates/` for new bundle templates
+- `specs/projects/sample-service/` for the reference sample bundle used by `validate`, `compile-prompts`, and `run`
+
 ## Prerequisites
 
 You should install and verify these before the first run:
@@ -57,7 +62,7 @@ python specyn.py sample-up -d
 
 Sample-service URLs:
 
-- Frontend: `http://localhost:3000`
+- Frontend: `http://localhost:5173`
 - Backend summary: `http://localhost:8080/api/v1/generated/sample-service/summary`
 - AI Server context: `http://localhost:8000/generated/sample-service/context`
 
@@ -105,6 +110,13 @@ If you want to run the pipeline without the dashboard:
 python specyn.py validate --spec-dir specs/projects/sample-service
 python specyn.py compile-prompts --spec-dir specs/projects/sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service
 python specyn.py run --spec-dir specs/projects/sample-service --project-id sample-service --workspace .workspace/sample-service
+```
+
+Host-based helper modes:
+
+```bash
+python scripts/specyn_tasks.py dev
+python scripts/specyn_tasks.py sample-dev
 ```
 
 ## Notes For First-Time Users

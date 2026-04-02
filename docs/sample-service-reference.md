@@ -15,7 +15,7 @@
 
 ## 실행 주소
 
-- Frontend: `http://localhost:3000`
+- Frontend: `http://localhost:5173`
 - Backend summary: `http://localhost:8080/api/v1/generated/sample-service/summary`
 - AI context: `http://localhost:8000/generated/sample-service/context`
 

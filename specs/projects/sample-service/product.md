@@ -1,7 +1,7 @@
 ---
 id: sample-service-product
 type: product
-version: 1.4.1
+version: 1.4.2
 owner_agent: planner
 status: draft
 depends_on: []
@@ -20,7 +20,6 @@ sample-service를 spec 기반으로 생성하고 실행까지 검증할 수 있�
 - 문서, 코드, 실행 방법 사이의 drift가 생기면 PR 단계에서 품질을 보장할 수 없다.
 
 ## 핵심 사용자
-
 - Specyn maintainer
 - dashboard를 통해 생성 흐름을 검증하는 개발자
 
@@ -34,12 +33,11 @@ sample-service를 spec 기반으로 생성하고 실행까지 검증할 수 있�
 ## 비기능 요구사항
 - 보안: 로컬 샘플 서비스는 인증 없이 실행 가능하되 오류 응답 구조는 일관돼야 한다.
 - 성능: 일반 CRUD 요청은 로컬 개발 환경에서 체감 지연 없이 처리되어야 한다.
-- 운영: `sample-up` 실행 기준 포트 계약은 frontend `3000`, backend `8080`, ai-server `8000` 이어야 한다.
+- 운영: `sample-up` 실행 기준 포트 계약은 frontend `5173`, backend `8080`, ai-server `8000` 이어야 한다.
 - UX: generated frontend는 브라우저 초기 로드 시 `React is not defined` 같은 bootstrap 오류가 없어야 한다.
 - 문서: generated docs와 runbook은 실제 실행 포트와 동일해야 한다.
 
 ## 제외 범위
-
 - 사용자 인증/인가 기능
 - 파일 업로드
 - 다중 프로젝트 관리

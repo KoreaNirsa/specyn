@@ -1,7 +1,7 @@
 ---
 id: sample-service-review
 type: review
-version: 1.4.1
+version: 1.4.2
 owner_agent: review
 status: draft
 depends_on: [api, test]
@@ -30,7 +30,7 @@ sample-service generated 결과가 reference sample로 적합한지 review 기�
 - flaky test 가능성이 있으면 수정 방향을 리뷰에 남겨야 한다.
 
 ## 운영 규칙
-- `sample-up` 포트 계약은 frontend `3000`, backend `8080`, ai-server `8000`과 일치해야 한다.
+- `sample-up` 포트 계약은 frontend `5173`, backend `8080`, ai-server `8000`과 일치해야 한다.
 - 문서, compose, generated runtime 사이에 drift가 있으면 major 이상으로 분류한다.
 - frontend bundle은 `React is not defined` 없이 초기 렌더링되어야 한다.
 - 실행 절차는 runbook만 보고 재현 가능해야 한다.

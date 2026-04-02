@@ -73,7 +73,7 @@ python specyn.py sample-up -d
 
 Open:
 
-- `http://localhost:3000`
+- `http://localhost:5173`
 - `http://localhost:8080/api/v1/generated/sample-service/summary`
 - `http://localhost:8000/generated/sample-service/context`
 

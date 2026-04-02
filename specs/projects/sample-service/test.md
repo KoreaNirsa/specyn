@@ -1,7 +1,7 @@
 ---
 id: sample-service-test
 type: test
-version: 1.4.1
+version: 1.4.2
 owner_agent: test
 status: draft
 depends_on: [api]
@@ -15,7 +15,7 @@ sample-service CRUD runtime이 contract대로 동작하는지 검증할 테스�
 - backend API
 - generated frontend flow
 - ai-server health 및 generated context
-- `sample-up` 포트 계약: frontend `3000`, backend `8080`, ai-server `8000`
+- `sample-up` 포트 계약: frontend `5173`, backend `8080`, ai-server `8000`
 - frontend bootstrap 오류 여부
 
 ## 시나리오
@@ -27,14 +27,12 @@ sample-service CRUD runtime이 contract대로 동작하는지 검증할 테스�
 - frontend 첫 화면 로드 시 `React is not defined` 또는 import 누락 오류가 없어야 한다.
 
 ## 테스트 대상
-
 - Controller 또는 Route Layer
 - Service / Use Case
 - Exception Handler
 - 주요 사용자 흐름
 
 # 출력
-
 - automated test 기준
 - manual smoke test 체크리스트
 - runtime 확인 evidence 수집 포인트
@@ -43,7 +41,7 @@ sample-service CRUD runtime이 contract대로 동작하는지 검증할 테스�
 1. success와 failure case를 모두 포함한다.
 2. CRUD 전체 흐름을 검증한다.
 3. HTTP 상태코드와 응답 본문을 함께 확인한다.
-4. frontend smoke는 `http://localhost:3000` 기준으로 검증한다.
+4. frontend smoke는 `http://localhost:5173` 기준으로 검증한다.
 
 # Validation 기준
 - 테스트 시나리오는 4개 이상이어야 한다.

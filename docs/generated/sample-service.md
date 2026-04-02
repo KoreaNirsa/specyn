@@ -36,6 +36,6 @@ Specyn 사용자가 `specyn.py run`까지 실행했을 때 실제로 생성 결�
 
 ## 실제 확인 순서
 1. `python scripts/specyn_tasks.py dev` 로 전체 스택을 실행합니다.
-2. `http://localhost:3000` 에 접속해 generated sample-service 화면을 확인합니다.
+2. `http://localhost:5173` 에 접속해 generated sample-service 화면을 확인합니다.
 3. 새 작업을 생성하고 상세 보기를 눌러 개별 GET 응답을 확인합니다.
 4. 상태 토글과 삭제를 수행해 프런트엔드와 백엔드가 함께 반응하는지 확인합니다.
