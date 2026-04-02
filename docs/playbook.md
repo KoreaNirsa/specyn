@@ -1,6 +1,6 @@
-# Playbook
+# 플레이북
 
-## 권장 순서
+## 권장 실행 순서
 
 ### 기본 경로
 
@@ -8,30 +8,31 @@
 2. `python specyn.py auth-status`
 3. `python specyn.py doctor`
 4. `python specyn.py up -d`
-5. `python specyn.py sample-up -d`
+5. 대시보드 `Workspace` 페이지에서 agent 실행
+6. 필요 시 `python specyn.py sample-up -d`
 
-Docker Desktop 이 꺼져 있으면 1단계에서 `.env` 저장까지 먼저 끝난 뒤 agent 검증이 보류될 수 있습니다. 이 경우 Docker 시작 후 `setup` 또는 `doctor` 를 다시 실행합니다.
+Docker Desktop 이 꺼져 있으면 `.env` 갱신까지만 끝나고 agent 검증이나 스택 기동은 보류될 수 있습니다. 이 경우 Docker 를 먼저 켠 뒤 `doctor` 또는 `setup` 을 다시 실행합니다.
 
-### 수동 spec 검증 경로
+### 수동 spec 경로
 
 1. `python specyn.py validate --spec-dir specs/projects/sample-service`
 2. `python specyn.py compile-prompts --spec-dir specs/projects/sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service`
 3. `python specyn.py run --spec-dir specs/projects/sample-service --project-id sample-service --workspace .workspace/sample-service`
-4. `python scripts/specyn_tasks.py dev`
-5. `python scripts/specyn_tasks.py sample-dev`
+4. 필요 시 `python scripts/specyn_tasks.py dev`
+5. 필요 시 `python scripts/specyn_tasks.py sample-dev`
 
-## 확인 포인트
+## 확인할 주소
 
-- Dashboard: `http://localhost:4173`
+- Dashboard Frontend: `http://localhost:4173`
 - Dashboard Backend: `http://localhost:8180`
 - Dashboard AI Server: `http://localhost:8100`
 - sample-service Frontend: `http://localhost:5173`
-- Backend summary: `http://localhost:8080/api/v1/generated/sample-service/summary`
-- AI context: `http://localhost:8000/generated/sample-service/context`
+- sample-service Backend summary: `http://localhost:8080/api/v1/generated/sample-service/summary`
+- sample-service AI context: `http://localhost:8000/generated/sample-service/context`
 
-## 운영 원칙
+## 운영 메모
 
-- 초기 설정은 `.env` 와 Docker agent 상태를 함께 고정하는 `python specyn.py setup` 을 기준으로 합니다.
-- 대시보드 agent 실행은 Docker 컨테이너 내부에서 수행됩니다.
-- 실제 프로젝트 산출물은 `projects/<project-id>/*` 아래에 생성됩니다.
-- 관리자형 대시보드와 결과 프로젝트 런타임은 포트와 폴더를 공유하지 않습니다.
+- 기본 진입점은 `python specyn.py ...` 입니다.
+- `scripts/specyn_tasks.py` 는 Docker Compose 대신 호스트 프로세스를 직접 띄우는 보조 도구입니다.
+- 실제 생성 산출물은 `projects/<project-id>/` 와 `.workspace/<project-id>/` 아래에 기록됩니다.
+- 문서와 README 를 업데이트할 때는 sample-service 경로, 포트, 실행 명령을 함께 맞춰야 합니다.

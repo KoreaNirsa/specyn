@@ -1,5 +1,5 @@
 name: Bug report
-description: 실행 문제나 예상과 다른 동작을 제보합니다.
+description: 실행 문제, 문서 오류, 기대와 다른 동작을 제보합니다.
 title: "[Bug] "
 labels: [bug]
 body:
@@ -7,14 +7,14 @@ body:
     id: summary
     attributes:
       label: 요약
-      description: 어떤 문제가 발생했는지 적어 주세요.
+      description: 어떤 문제가 발생했는지 간단히 적어 주세요.
     validations:
       required: true
   - type: input
     id: environment
     attributes:
       label: 실행 환경
-      description: 예) Windows 11 / PowerShell, macOS / zsh, Ubuntu / bash
+      description: 예: Windows 11 / PowerShell, macOS / zsh, Ubuntu / bash
     validations:
       required: true
   - type: textarea
@@ -23,9 +23,10 @@ body:
       label: 재현 절차
       description: 실행한 명령과 순서를 적어 주세요.
       placeholder: |
-        1. python scripts/specyn_tasks.py doctor
-        2. python scripts/specyn_tasks.py sample-flow
-        3. python scripts/specyn_tasks.py dev
+        1. python specyn.py setup
+        2. python specyn.py doctor
+        3. python specyn.py validate --spec-dir specs/projects/sample-service
+        4. python specyn.py run --spec-dir specs/projects/sample-service --project-id sample-service --workspace .workspace/sample-service
     validations:
       required: true
   - type: textarea
@@ -44,4 +45,5 @@ body:
     id: logs
     attributes:
       label: 로그 / 스크린샷
-      description: 에러 로그나 스크린샷을 붙여 주세요.
+      description: 관련 로그나 화면을 붙여 주세요.
+*** Delete File: c:\Users\KoreaNirsa\Desktop\specyn\dashboard\frontend\README.md

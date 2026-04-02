@@ -1,4 +1,8 @@
-# CLI Run Reference
+# CLI 실행 참고
+
+## 기본 원칙
+
+Specyn의 기본 CLI 진입점은 `python specyn.py` 입니다. 아래 명령은 모두 레포 루트에서 실행합니다.
 
 ## `setup`
 
@@ -6,14 +10,14 @@
 python specyn.py setup
 ```
 
-What it does:
+역할:
 
-- creates or updates `.env`
-- chooses `chatgpt` or `openapi` auth mode
-- reuses or refreshes ChatGPT-linked login state
-- accepts or updates `OPENAI_API_KEY`
-- chooses the execution model
-- validates Docker-backed agent readiness when Docker Desktop is available
+- `.env` 생성 또는 갱신
+- `chatgpt` / `openapi` 인증 모드 선택
+- ChatGPT 로그인 재사용 또는 재로그인
+- `OPENAI_API_KEY` 입력 또는 갱신
+- 실행 모델 선택
+- Docker 사용 가능 시 agent 준비 상태 확인
 
 ## `auth-status`
 
@@ -21,12 +25,12 @@ What it does:
 python specyn.py auth-status
 ```
 
-Shows:
+확인 항목:
 
-- auth mode
-- API key presence
-- Docker readiness hints
-- local Codex/auth cache hints
+- 현재 인증 모드
+- API 키 존재 여부
+- Docker 준비 상태 힌트
+- 로컬 Codex 인증 캐시 힌트
 
 ## `doctor`
 
@@ -34,12 +38,12 @@ Shows:
 python specyn.py doctor
 ```
 
-Checks the local environment, including:
+확인 항목:
 
 - Python
-- Node.js and npm
-- Docker CLI and daemon
-- related local runtime readiness
+- Node.js / npm
+- Docker CLI 와 daemon
+- 로컬 실행 준비 상태
 
 ## `up -d` / `down`
 
@@ -48,7 +52,7 @@ python specyn.py up -d
 python specyn.py down
 ```
 
-Starts and stops the dashboard stack.
+대시보드 스택을 시작하고 종료합니다.
 
 ## `sample-up -d` / `sample-down`
 
@@ -57,7 +61,7 @@ python specyn.py sample-up -d
 python specyn.py sample-down
 ```
 
-Starts and stops the sample-service stack.
+sample-service 런타임 스택을 시작하고 종료합니다.
 
 ## `validate`
 
@@ -65,11 +69,15 @@ Starts and stops the sample-service stack.
 python specyn.py validate --spec-dir specs/projects/sample-service
 ```
 
+spec bundle 필수 섹션, 구조, validator 규칙을 확인합니다.
+
 ## `compile-prompts`
 
 ```bash
 python specyn.py compile-prompts --spec-dir specs/projects/sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service
 ```
+
+agent 실행에 필요한 prompt 파일을 `.specyn/prompts/` 아래에 생성합니다.
 
 ## `run`
 
@@ -77,11 +85,20 @@ python specyn.py compile-prompts --spec-dir specs/projects/sample-service --outp
 python specyn.py run --spec-dir specs/projects/sample-service --project-id sample-service --workspace .workspace/sample-service
 ```
 
-Generated output is written into local project/workspace paths, not meant to be blindly committed.
+spec bundle 을 기준으로 agent 흐름을 실행하고 생성 결과를 `projects/sample-service` 와 `.workspace/sample-service` 아래에 기록합니다.
 
-## Security Reminder
+## 보조 호스트 실행 모드
 
-- `.env` is local-only
-- `.specyn/codex` is local-only
-- `.workspace/` is local-only
-- check `.gitignore` before committing
+아래 명령은 선택 사항입니다. Docker Compose 대신 로컬 프로세스를 직접 띄울 때 사용합니다.
+
+```bash
+python scripts/specyn_tasks.py dev
+python scripts/specyn_tasks.py sample-dev
+```
+
+## 보안 메모
+
+- `.env` 는 로컬 전용입니다.
+- `.specyn/codex` 는 로컬 전용입니다.
+- `.workspace/` 는 검토 전까지 로컬 산출물로 취급합니다.
+- 커밋 전 `.gitignore` 와 생성 결과를 확인합니다.

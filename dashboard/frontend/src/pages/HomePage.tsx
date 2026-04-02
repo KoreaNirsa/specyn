@@ -19,12 +19,12 @@ export function HomePage() {
       <article className="panel">
         <h2>Suggested Start</h2>
         <ol>
-          <li><code>Copy-Item .env.example .env</code> or <code>cp .env.example .env</code></li>
-          <li><code>python scripts/specyn_tasks.py bootstrap</code></li>
-          <li><code>python scripts/specyn_tasks.py doctor</code></li>
           <li><code>python specyn.py setup</code></li>
+          <li><code>python specyn.py auth-status</code></li>
+          <li><code>python specyn.py doctor</code></li>
           <li><code>python specyn.py up -d</code></li>
           <li><code>python specyn.py sample-up -d</code></li>
+          <li>Run agents from the Workspace page.</li>
         </ol>
       </article>
 

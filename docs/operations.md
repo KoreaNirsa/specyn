@@ -1,6 +1,6 @@
-# Operations
+# 운영 가이드
 
-## Recommended Run Order
+## 권장 실행 순서
 
 ```text
 setup
@@ -10,15 +10,15 @@ setup
   -> sample-up -d
 ```
 
-## Required Local Tools
+## 필수 로컬 도구
 
-These should be installed on the machine before first use:
+최초 실행 전 아래 도구를 설치합니다.
 
 - Docker Desktop
 - Python 3.11+
-- Node.js 20+ and npm
+- Node.js 20+ 및 npm
 
-Basic checks:
+확인:
 
 ```bash
 python --version
@@ -27,63 +27,55 @@ npm --version
 docker version
 ```
 
-## Core Commands
+## 핵심 명령
 
-| Command | Purpose |
+| 명령 | 목적 |
 |---|---|
-| `python specyn.py setup` | Create/update `.env`, choose auth mode, choose model, validate Docker agent when available |
-| `python specyn.py auth-status` | Show auth mode, Docker readiness, and local auth/cache hints |
-| `python specyn.py doctor` | Check local toolchain and Docker-related readiness |
-| `python specyn.py up -d` | Start dashboard frontend/backend/AI server |
-| `python specyn.py down` | Stop dashboard stack |
-| `python specyn.py sample-up -d` | Start sample-service stack |
-| `python specyn.py sample-down` | Stop sample-service stack |
-| `python specyn.py validate ...` | Validate the spec bundle |
-| `python specyn.py compile-prompts ...` | Compile prompts into `.specyn/prompts/...` |
-| `python specyn.py run ...` | Execute the local SDD flow |
+| `python specyn.py setup` | `.env` 생성/갱신, 인증 방식 선택, 모델 선택, Docker agent 준비 확인 |
+| `python specyn.py auth-status` | 인증 모드, Docker 준비 상태, 로컬 캐시 상태 확인 |
+| `python specyn.py doctor` | 로컬 도구체인과 Docker 연동 준비 상태 점검 |
+| `python specyn.py up -d` | dashboard frontend/backend/AI server 시작 |
+| `python specyn.py down` | dashboard 스택 종료 |
+| `python specyn.py sample-up -d` | sample-service 스택 시작 |
+| `python specyn.py sample-down` | sample-service 스택 종료 |
+| `python specyn.py validate ...` | spec bundle 검증 |
+| `python specyn.py compile-prompts ...` | `.specyn/prompts/...` 아래 prompt 파일 생성 |
+| `python specyn.py run ...` | 로컬 SDD 흐름 실행 |
 
-## Auth Modes
+## 인증 모드
 
 ### `chatgpt`
 
-- Uses local ChatGPT-linked Codex login cache
-- Cache lives under `.specyn/codex`
-- Docker Desktop should be running if you want the Docker agent to reuse that login immediately
+- 로컬 ChatGPT 연동 Codex 로그인 캐시를 사용합니다.
+- 캐시는 `.specyn/codex` 아래에 저장됩니다.
+- Docker agent 가 같은 로그인 상태를 재사용하려면 Docker Desktop 이 켜져 있어야 합니다.
 
 ### `openapi`
 
-- Uses `OPENAI_API_KEY` from `.env`
-- Treat `.env` as sensitive
-- Never commit or share it
+- `.env` 의 `OPENAI_API_KEY` 를 사용합니다.
+- `.env` 는 민감 정보로 취급합니다.
+- 커밋하거나 공유하지 않습니다.
 
-## Local-Only Files
+## 로컬 전용 파일
 
-These are local runtime artifacts and should not be committed:
+다음 항목은 로컬 산출물이므로 커밋하지 않습니다.
 
 - `.env`
 - `.env.*`
 - `.specyn/`
 - `.workspace/`
 - `node_modules/`
-- local logs and caches
+- 로컬 로그와 캐시
 
-## Security Guidance
+## 보안 메모
 
-- Keep `.env` out of version control
-- Keep `.specyn/codex` out of version control
-- Review terminal output before sharing logs externally
-- Be careful with screen recordings and screenshots during setup
-- If using `openapi`, rotate the API key if you think it was exposed
+- `.env` 와 `.specyn/codex` 는 버전 관리에서 제외합니다.
+- 외부로 로그를 공유하기 전 민감 정보 포함 여부를 확인합니다.
+- `openapi` 모드에서 키 노출이 의심되면 즉시 교체합니다.
 
-## UI Notes
+## 주요 포트
 
-- The Dashboard page is now status-oriented
-- Agent execution lives in the Workspace page
-- Live conversation is filtered to agent messages, while raw step logs are hidden behind details panels
-
-## Common Ports
-
-| Service | Port | URL |
+| 서비스 | 포트 | URL |
 |---|---|---|
 | Dashboard Frontend | `4173` | `http://localhost:4173` |
 | Dashboard Backend | `8180` | `http://localhost:8180/api/v1/spec-runs/health` |
