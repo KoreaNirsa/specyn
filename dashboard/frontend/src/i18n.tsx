@@ -11,7 +11,6 @@ export type Language = "ko" | "en";
 
 type TranslationParams = Record<string, string | number>;
 type TranslationValue = string | ((params?: TranslationParams) => string);
-type TranslationKey = string;
 
 interface I18nContextValue {
   language: Language;
@@ -368,6 +367,8 @@ const translations = {
   },
 } satisfies Record<Language, Record<string, TranslationValue>>;
 
+type TranslationKey = keyof typeof translations.ko;
+
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 function renderTranslation(
@@ -397,7 +398,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         setLanguageState(nextLanguage);
         window.localStorage.setItem(STORAGE_KEY, nextLanguage);
       },
-      t: (key, params) => renderTranslation(translations[language][key], params),
+      t: (key, params) => renderTranslation(translations[language][key as TranslationKey], params),
     }),
     [language],
   );

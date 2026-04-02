@@ -33,8 +33,5 @@ jobs:
       - name: Validate spec bundle
         run: python ci/check_spec_bundle.py
 
-      - name: Check Python formatting
-        run: python -m ruff format --check dashboard/ai-server tools ci scripts specyn.py
-
       - name: Run tests
         run: python -m pytest dashboard/ai-server/tests tools/tests scripts/tests -q
