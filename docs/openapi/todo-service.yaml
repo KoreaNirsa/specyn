@@ -1,0 +1,91 @@
+openapi: 3.1.0
+info:
+  title: Todo Service API
+  version: 1.0.0
+  description: Specyn 예제 Todo 서비스 OpenAPI 문서
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/v1/todos:
+    get:
+      summary: Todo 목록 조회
+      responses:
+        '200':
+          description: 성공
+    post:
+      summary: Todo 생성
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTodoRequest'
+      responses:
+        '201':
+          description: 생성 성공
+  /api/v1/todos/{id}:
+    get:
+      summary: Todo 단건 조회
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 성공
+        '404':
+          description: 리소스 없음
+  /api/v1/todos/{id}/status:
+    patch:
+      summary: Todo 상태 변경
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTodoStatusRequest'
+      responses:
+        '200':
+          description: 변경 성공
+        '400':
+          description: 잘못된 입력
+  /api/v1/todos/{id}:
+    delete:
+      summary: Todo 삭제
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 삭제 성공
+components:
+  schemas:
+    CreateTodoRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+    UpdateTodoStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [PENDING, DONE]

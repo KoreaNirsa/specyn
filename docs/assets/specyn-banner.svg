@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="420" viewBox="0 0 1200 420" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="0.55" stop-color="#111827"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="card" x1="140" y1="80" x2="1060" y2="340" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.15"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.04"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="420" rx="32" fill="url(#bg)"/>
+  <circle cx="1038" cy="88" r="120" fill="#60A5FA" fill-opacity="0.18"/>
+  <circle cx="155" cy="358" r="140" fill="#22C55E" fill-opacity="0.12"/>
+  <rect x="84" y="56" width="1032" height="308" rx="28" fill="url(#card)" stroke="#FFFFFF" stroke-opacity="0.14"/>
+
+  <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif" fill="#F8FAFC">
+    <text x="120" y="148" font-size="56" font-weight="700">🚀 Specyn</text>
+    <text x="120" y="198" font-size="26" fill="#DBEAFE">Open Source AX(AI Experience) Builder Framework</text>
+    <text x="120" y="244" font-size="22" fill="#E2E8F0">기획 → 스펙 → 코드 생성 → 테스트 → 리뷰 → 문서화 → CI 검증까지</text>
+    <text x="120" y="282" font-size="22" fill="#E2E8F0">하나의 흐름으로 연결하는 SDD(Spec Driven Development) 기반 시작점입니다.</text>
+  </g>
+</svg>

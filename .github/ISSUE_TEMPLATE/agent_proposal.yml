@@ -1,0 +1,29 @@
+name: Agent proposal
+description: 새 agent 추가, handoff 조정, feedback loop 변경을 제안합니다.
+title: "[Agent] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 제안 요약
+      description: 어떤 agent 또는 flow를 바꾸고 싶은지 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: 필요한 이유
+      description: 어떤 품질 문제나 운영 문제를 해결하는지 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: 영향 범위
+      description: agents / specs / validator / docs / runtime 중 어디가 바뀌는지 적어 주세요.
+  - type: textarea
+    id: risks
+    attributes:
+      label: 리스크와 호환성
+      description: 기존 sample-service, quickstart, run trace에 어떤 영향이 있는지 적어 주세요.

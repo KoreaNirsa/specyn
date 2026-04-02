@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="143" height="28" role="img" aria-label="License: Apache-2.0">
+  <linearGradient id="g" x2="0" y2="100%">
+    <stop offset="0" stop-color="#fff" stop-opacity=".08"/>
+    <stop offset="1" stop-opacity=".08"/>
+  </linearGradient>
+  <rect rx="14" width="143" height="28" fill="#e5e7eb"/>
+  <rect rx="14" width="61" height="28" fill="#334155"/>
+  <rect rx="14" x="61" width="82" height="28" fill="#0F172A"/>
+  <path fill="#0F172A" d="M61 0h14v28h-14z"/>
+  <rect rx="14" width="143" height="28" fill="url(#g)"/>
+  <g fill="#fff" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif" font-size="13" text-anchor="middle">
+    <text x="30.5" y="19">License</text>
+    <text x="102.0" y="19">Apache-2.0</text>
+  </g>
+</svg>

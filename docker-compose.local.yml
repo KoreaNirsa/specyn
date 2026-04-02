@@ -1,0 +1,54 @@
+services:
+  dashboard-ai-server:
+    build:
+      context: .
+      dockerfile: docker/ai-server.Dockerfile
+    working_dir: /workspace
+    env_file:
+      - .env
+    environment:
+      CODEX_HOME: /workspace/.specyn/codex
+    volumes:
+      - ./:/workspace
+    command:
+      [
+        "bash",
+        "-lc",
+        "/opt/specyn-venv/bin/python -m uvicorn app.main:app --app-dir dashboard/ai-server --host 0.0.0.0 --port 8100 --reload",
+      ]
+    ports:
+      - "8100:8100"
+
+  dashboard-backend:
+    image: gradle:8.14.0-jdk21
+    working_dir: /workspace/dashboard/backend
+    env_file:
+      - .env
+    volumes:
+      - ./:/workspace
+    command: ["gradle", "--no-daemon", "bootRun"]
+    environment:
+      SERVER_PORT: "8180"
+      AI_SERVER_URL: http://dashboard-ai-server:8100
+    ports:
+      - "8180:8180"
+    depends_on:
+      - dashboard-ai-server
+
+  dashboard-frontend:
+    image: node:20-bookworm
+    working_dir: /workspace/dashboard/frontend
+    stdin_open: true
+    tty: true
+    env_file:
+      - .env
+    volumes:
+      - ./:/workspace
+    command: ["sh", "-lc", "npm install && node node_modules/vite/bin/vite.js --host 0.0.0.0 --port 4173"]
+    environment:
+      VITE_BACKEND_URL: http://localhost:8180
+      VITE_AI_SERVER_URL: http://localhost:8100
+    ports:
+      - "4173:4173"
+    depends_on:
+      - dashboard-backend

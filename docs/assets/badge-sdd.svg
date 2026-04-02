@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="241" height="28" role="img" aria-label="Workflow: Spec Driven Development">
+  <linearGradient id="g" x2="0" y2="100%">
+    <stop offset="0" stop-color="#fff" stop-opacity=".08"/>
+    <stop offset="1" stop-opacity=".08"/>
+  </linearGradient>
+  <rect rx="14" width="241" height="28" fill="#e5e7eb"/>
+  <rect rx="14" width="68" height="28" fill="#15803D"/>
+  <rect rx="14" x="68" width="173" height="28" fill="#166534"/>
+  <path fill="#166534" d="M68 0h14v28h-14z"/>
+  <rect rx="14" width="241" height="28" fill="url(#g)"/>
+  <g fill="#fff" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif" font-size="13" text-anchor="middle">
+    <text x="34.0" y="19">Workflow</text>
+    <text x="154.5" y="19">Spec Driven Development</text>
+  </g>
+</svg>
