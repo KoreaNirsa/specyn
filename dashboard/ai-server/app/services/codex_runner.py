@@ -329,7 +329,7 @@ class CodexRunner:
         prepared = list(command)
         executable = prepared[0]
 
-        if os.name != "nt":
+        if not self._is_windows():
             return prepared
 
         if not any(separator in executable for separator in (os.sep, "/", "\\")):
@@ -341,6 +341,15 @@ class CodexRunner:
         if Path(executable).suffix.lower() in self.WINDOWS_SHELL_EXTENSIONS:
             return ["cmd", "/c", executable, *prepared[1:]]
         return prepared
+
+    def _is_windows(self) -> bool:
+        """
+        Return whether the current runtime is Windows.
+
+        Returns:
+            True when running on Windows, otherwise False.
+        """
+        return os.name == "nt"
 
     def _is_capacity_error(self, message: str) -> bool:
         """
