@@ -2,8 +2,7 @@ name: Python CI
 
 on:
   pull_request:
-  push:
-    paths:
+      paths:
       - 'dashboard/ai-server/**'
       - 'tools/**'
       - 'scripts/**'
@@ -12,6 +11,9 @@ on:
       - 'pyproject.toml'
       - 'pytest.ini'
       - '.github/workflows/ai-server-ci.yml'
+  push:
+    branches: [ main ]
+  
 
 jobs:
   test:
