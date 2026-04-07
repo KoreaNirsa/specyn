@@ -1,3 +1,5 @@
+<img width="100%" height="600" alt="specyn-logo" src="https://github.com/user-attachments/assets/1cb4ea88-b113-4cf0-8592-d88c73db9830" />
+
 # Specyn
 
 Specyn is a Spec Driven Development workspace that connects spec bundles, agent execution, generated code, runtime verification, and a dashboard UI.
