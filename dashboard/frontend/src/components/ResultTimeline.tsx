@@ -279,15 +279,68 @@ function extractAgentMessage(message: string): string | null {
     };
 
     if (parsed.item?.type === "agent_message" && typeof parsed.item.text === "string") {
-      return parsed.item.text.trim();
+      return sanitizeAgentMessage(parsed.item.text);
     }
 
     if (parsed.type === "agent_message" && typeof parsed.text === "string") {
-      return parsed.text.trim();
+      return sanitizeAgentMessage(parsed.text);
     }
   } catch {
     return null;
   }
 
   return null;
+}
+
+function sanitizeAgentMessage(text: string): string | null {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (looksLikeStructuredPayload(trimmed)) {
+    return null;
+  }
+
+  const cutoffPatterns = [
+    /\nSTEP_LABEL:/,
+    /\n\*\*Work Summary\*\*/,
+    /\n\*\*Changed Files\*\*/,
+    /\n\*\*Validation Results\*\*/,
+    /\n\*\*Next Agent Handoff\*\*/,
+    /\nPatch Or File Contents/,
+    /\nPath:/,
+    /\n```/,
+    /\n## /,
+  ];
+
+  let concise = trimmed;
+  for (const pattern of cutoffPatterns) {
+    const match = concise.match(pattern);
+    if (match?.index !== undefined) {
+      concise = concise.slice(0, match.index).trim();
+    }
+  }
+
+  concise = concise.replace(/\s+/g, " ").trim();
+  if (!concise || looksLikeStructuredPayload(concise)) {
+    return null;
+  }
+
+  return concise.length > 280 ? `${concise.slice(0, 277).trimEnd()}...` : concise;
+}
+
+function looksLikeStructuredPayload(text: string): boolean {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  return (
+    normalized.startsWith("STEP_LABEL:") ||
+    normalized.startsWith("STEP ") ||
+    normalized.includes("PHASE:") ||
+    normalized.includes("FEEDBACK_ROUND:") ||
+    normalized.includes("CHANGED_FILES:") ||
+    normalized.includes("NEXT_HANDOFF:") ||
+    normalized.includes("Patch Or File Contents") ||
+    normalized.includes("```diff") ||
+    normalized.includes("Path: `/workspace/")
+  );
 }

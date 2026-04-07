@@ -83,7 +83,6 @@ public class AiServerClient {
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(baseUrl + "/v1/agents/execute/stream"))
                     .header("Content-Type", "application/json; charset=utf-8")
-                    .timeout(timeout)
                     .POST(HttpRequest.BodyPublishers.ofString(toJson(request)))
                     .build();
 
