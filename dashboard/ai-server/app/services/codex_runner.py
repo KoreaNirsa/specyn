@@ -7,6 +7,7 @@ import asyncio
 import inspect
 import os
 from pathlib import Path
+import shutil
 import shlex
 from textwrap import dedent
 from typing import Any
@@ -34,6 +35,8 @@ class CodexRunner:
             settings: 런타임 동작을 제어하는 설정 객체다.
         """
         self.settings = settings
+
+    WINDOWS_SHELL_EXTENSIONS = {".cmd", ".bat", ".ps1"}
 
     async def run(
         self,
@@ -90,16 +93,22 @@ class CodexRunner:
                 workspace=str(workspace_path),
                 model=model,
             )
+            prepared_command = self._prepare_command_for_subprocess(shlex.split(command))
             await self._emit(event_sink, f"Starting Codex CLI with model={model}.")
 
-            process = await asyncio.create_subprocess_exec(
-                *shlex.split(command),
-                cwd=str(workspace_path),
-                env=self._build_subprocess_env(workspace_path),
-                stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
+            try:
+                process = await asyncio.create_subprocess_exec(
+                    *prepared_command,
+                    cwd=str(workspace_path),
+                    env=self._build_subprocess_env(workspace_path),
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+            except OSError as exception:
+                error_message = f"[codex-error] failed to start Codex CLI: {exception}"
+                await self._emit(event_sink, error_message)
+                return (error_message, [])
 
             stdout_lines: list[str] = []
             stderr_lines: list[str] = []
@@ -303,6 +312,44 @@ class CodexRunner:
             env.pop("OPENAI_API_KEY", None)
 
         return env
+
+    def _prepare_command_for_subprocess(self, command: list[str]) -> list[str]:
+        """
+        Prepare the command so Windows shell launchers can be executed reliably.
+
+        Args:
+            command: Codex CLI command token list.
+
+        Returns:
+            A subprocess-safe command list for the current platform.
+        """
+        if not command:
+            return command
+
+        prepared = list(command)
+        executable = prepared[0]
+
+        if not self._is_windows():
+            return prepared
+
+        if not any(separator in executable for separator in (os.sep, "/", "\\")):
+            resolved = shutil.which(executable)
+            if resolved:
+                executable = resolved
+
+        prepared[0] = executable
+        if Path(executable).suffix.lower() in self.WINDOWS_SHELL_EXTENSIONS:
+            return ["cmd", "/c", executable, *prepared[1:]]
+        return prepared
+
+    def _is_windows(self) -> bool:
+        """
+        Return whether the current runtime is Windows.
+
+        Returns:
+            True when running on Windows, otherwise False.
+        """
+        return os.name == "nt"
 
     def _is_capacity_error(self, message: str) -> bool:
         """

@@ -14,7 +14,7 @@ services:
       [
         "bash",
         "-lc",
-        "/opt/specyn-venv/bin/python -m uvicorn app.main:app --app-dir dashboard/ai-server --host 0.0.0.0 --port 8100 --reload",
+        "/opt/specyn-venv/bin/python -m uvicorn app.main:app --app-dir dashboard/ai-server --host 0.0.0.0 --port 8100 --reload --reload-dir dashboard/ai-server",
       ]
     ports:
       - "8100:8100"
