@@ -77,3 +77,48 @@ async def test_codex_runner_prepares_standard_runtime_scaffold(monkeypatch, tmp_
     assert (workspace / "docker-compose.local.yml").exists()
     assert "name: sample-service" in (workspace / "docker-compose.local.yml").read_text(encoding="utf-8")
     assert (workspace / ".specyn" / "last_codex_prompt.md").read_text(encoding="utf-8") == "test prompt"
+
+
+@pytest.mark.asyncio
+async def test_codex_runner_wraps_windows_shell_launcher(monkeypatch, tmp_path: pathlib.Path) -> None:
+    settings = Settings(
+        codex_exec_mode="cli",
+        codex_command_template="codex exec --model {model} -C {workspace}",
+    )
+    runner = CodexRunner(settings)
+    workspace = tmp_path / "projects" / "sample-service"
+    captured: dict[str, object] = {}
+
+    async def fake_create_subprocess_exec(*args, **kwargs):
+        captured["args"] = args
+        return _FakeProcess()
+
+    monkeypatch.setattr("app.services.codex_runner.os.name", "nt")
+    monkeypatch.setattr("app.services.codex_runner.shutil.which", lambda binary: r"C:\Users\tester\AppData\Roaming\npm\codex.cmd")
+    monkeypatch.setattr("asyncio.create_subprocess_exec", fake_create_subprocess_exec)
+
+    result, generated_files = await runner.run("test prompt", str(workspace))
+
+    assert result == "[codex-ok] execution complete"
+    assert generated_files == []
+    assert captured["args"][:3] == ("cmd", "/c", r"C:\Users\tester\AppData\Roaming\npm\codex.cmd")
+
+
+@pytest.mark.asyncio
+async def test_codex_runner_reports_start_failure(monkeypatch, tmp_path: pathlib.Path) -> None:
+    settings = Settings(
+        codex_exec_mode="cli",
+        codex_command_template="codex exec --model {model} -C {workspace}",
+    )
+    runner = CodexRunner(settings)
+    workspace = tmp_path / "projects" / "sample-service"
+
+    async def fake_create_subprocess_exec(*args, **kwargs):
+        raise OSError("spawn failed")
+
+    monkeypatch.setattr("asyncio.create_subprocess_exec", fake_create_subprocess_exec)
+
+    result, generated_files = await runner.run("test prompt", str(workspace))
+
+    assert result == "[codex-error] failed to start Codex CLI: spawn failed"
+    assert generated_files == []

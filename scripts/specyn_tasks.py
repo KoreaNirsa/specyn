@@ -814,7 +814,7 @@ def task_ai_server() -> None:
 
     주요 흐름은 `run_checked()`, `venv_python_cmd()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
     """
-    run_checked([*venv_python_cmd(), "-m", "uvicorn", "app.main:app", "--app-dir", "dashboard/ai-server", "--host", "0.0.0.0", "--port", "8100", "--reload"], cwd=ROOT_DIR)
+    run_checked([*venv_python_cmd(), "-m", "uvicorn", "app.main:app", "--app-dir", "dashboard/ai-server", "--host", "0.0.0.0", "--port", "8100", "--reload", "--reload-dir", "dashboard/ai-server"], cwd=ROOT_DIR)
 
 
 def task_backend() -> None:
@@ -844,7 +844,7 @@ def task_sample_ai_server() -> None:
     주요 흐름은 `ensure_sample_runtime_generated()`, `run_checked()`, `venv_python_cmd()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
     """
     ensure_sample_runtime_generated()
-    run_checked([*venv_python_cmd(), "-m", "uvicorn", "app.main:app", "--app-dir", "projects/sample-service/ai-server", "--host", "0.0.0.0", "--port", "8000", "--reload"], cwd=ROOT_DIR)
+    run_checked([*venv_python_cmd(), "-m", "uvicorn", "app.main:app", "--app-dir", "projects/sample-service/ai-server", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "projects/sample-service/ai-server"], cwd=ROOT_DIR)
 
 
 def task_sample_backend() -> None:
@@ -931,7 +931,7 @@ def task_dev() -> None:
     processes: list[tuple[str, subprocess.Popen[bytes]]] = []
     try:
         ensure_gradle_runtime(BACKEND_DIR)
-        processes.append(start_process("Dashboard AI Server", [*venv_python_cmd(), "-m", "uvicorn", "app.main:app", "--app-dir", "dashboard/ai-server", "--host", "0.0.0.0", "--port", "8100", "--reload"], ROOT_DIR))
+        processes.append(start_process("Dashboard AI Server", [*venv_python_cmd(), "-m", "uvicorn", "app.main:app", "--app-dir", "dashboard/ai-server", "--host", "0.0.0.0", "--port", "8100", "--reload", "--reload-dir", "dashboard/ai-server"], ROOT_DIR))
         processes.append(start_process("Dashboard Backend", backend_bootrun_command(BACKEND_DIR), BACKEND_DIR))
         processes.append(start_process("Dashboard Frontend", ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "4173"], FRONTEND_DIR))
         wait_for_dev_services(processes)
@@ -958,7 +958,7 @@ def task_sample_dev() -> None:
     ensure_gradle_runtime(SAMPLE_BACKEND_DIR)
     processes: list[tuple[str, subprocess.Popen[bytes]]] = []
     try:
-        processes.append(start_process("Sample AI Server", [*venv_python_cmd(), "-m", "uvicorn", "app.main:app", "--app-dir", "projects/sample-service/ai-server", "--host", "0.0.0.0", "--port", "8000", "--reload"], ROOT_DIR))
+        processes.append(start_process("Sample AI Server", [*venv_python_cmd(), "-m", "uvicorn", "app.main:app", "--app-dir", "projects/sample-service/ai-server", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "projects/sample-service/ai-server"], ROOT_DIR))
         processes.append(start_process("Sample Backend", backend_bootrun_command(SAMPLE_BACKEND_DIR), SAMPLE_BACKEND_DIR))
         processes.append(start_process("Sample Frontend", ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"], SAMPLE_FRONTEND_DIR))
         wait_for_sample_services(processes)
