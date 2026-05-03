@@ -11,6 +11,24 @@ from pathlib import Path
 from tools import local_sdd_runtime, prompt_compiler, specyn
 
 
+def test_cmd_init_spec_writes_spec_kit_file_names(tmp_path: Path) -> None:
+    args = type("Args", (), {
+        "project_id": "sample-service",
+        "output_dir": str(tmp_path),
+        "overwrite": False,
+    })()
+
+    exit_code = specyn.cmd_init_spec(args)
+
+    assert exit_code == 0
+    assert (tmp_path / "spec.md").exists()
+    assert (tmp_path / "tasks.md").exists()
+    assert (tmp_path / "plan.md").exists()
+    assert not (tmp_path / "product.md").exists()
+    assert not (tmp_path / "test.md").exists()
+    assert not (tmp_path / "agent.md").exists()
+
+
 def test_cmd_run_local_returns_generated_file_summary(monkeypatch, capsys, tmp_path: Path) -> None:
     """
     회귀 테스트로서 `cmd_run_local_returns_generated_file_summary` 시나리오를 검증한다.
