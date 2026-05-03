@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 
 import { streamSpecBundle } from "../api/client";
+import { SPEC_DOCUMENT_TYPES, SPEC_FILE_NAMES } from "../lib/specKit";
 import { useWorkspaceStore } from "../store/workspaceStore";
 import { AgentStepResult, RunFormValues, SpecDocument, SpecRunStreamEvent, SpecType } from "../types";
 
@@ -9,8 +10,8 @@ import { AgentStepResult, RunFormValues, SpecDocument, SpecRunStreamEvent, SpecT
  */
 function toSpecDocuments(documents: Record<SpecType, string>): SpecDocument[] {
   return (Object.entries(documents) as Array<[SpecType, string]>).map(([type, content]) => ({
-    name: `${type}.md`,
-    type,
+    name: SPEC_FILE_NAMES[type],
+    type: SPEC_DOCUMENT_TYPES[type],
     content,
   }));
 }

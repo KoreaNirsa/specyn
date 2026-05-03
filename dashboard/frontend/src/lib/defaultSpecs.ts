@@ -1,5 +1,5 @@
 export const DEFAULT_DOCS = {
-  product: `---
+  spec: `---
 id: sample-service-product
 type: product
 version: 1.3.0
@@ -112,7 +112,7 @@ sample-service CRUD 기능에 필요한 API contract를 정의한다.
 3. request/response 예시
 4. validation 포인트
 `,
-  test: `---
+  tasks: `---
 id: sample-service-test
 type: test
 version: 1.3.0
@@ -221,7 +221,7 @@ sample-service generated 결과가 reference sample로 충분한지 review 기�
 4. minor
 5. required patch directions
 `,
-  agent: `---
+  plan: `---
 id: sample-service-agent
 type: agent
 version: 1.3.0
@@ -309,7 +309,7 @@ sample-service를 생성하기 위한 agent execution flow와 handoff 규칙을 
 - validation ownership
 
 # 실행 규칙
-1. agent.md는 orchestration의 source of truth다.
+1. plan.md는 orchestration의 source of truth다.
 2. feedback loop는 max_feedback_rounds 범위 안에서만 재진입한다.
 3. docs는 실제 run command와 URL을 반영해야 한다.
 

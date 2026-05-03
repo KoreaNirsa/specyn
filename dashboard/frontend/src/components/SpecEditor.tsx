@@ -1,7 +1,5 @@
 import { useWorkspaceStore } from "../store/workspaceStore";
-import { SpecType } from "../types";
-
-const SPEC_ORDER: SpecType[] = ["product", "api", "test", "review", "agent"];
+import { SPEC_FILE_NAMES, SPEC_ORDER } from "../lib/specKit";
 
 /**
  * Handle spec editor for the current workflow.
@@ -24,7 +22,7 @@ export function SpecEditor() {
       </div>
       {SPEC_ORDER.map((type) => (
         <section className="spec-card" key={type}>
-          <h3>{type}.md</h3>
+          <h3>{SPEC_FILE_NAMES[type]}</h3>
           <textarea
             value={documents[type]}
             onChange={(event) => setDocument(type, event.target.value)}

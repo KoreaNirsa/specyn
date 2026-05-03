@@ -1,8 +1,9 @@
-export type SpecType = "product" | "api" | "test" | "review" | "agent";
+export type SpecType = "spec" | "api" | "tasks" | "review" | "plan";
+export type SpecDocumentType = "product" | "api" | "test" | "review" | "agent";
 
 export interface SpecDocument {
   name: string;
-  type: SpecType;
+  type: SpecDocumentType;
   content: string;
 }
 
