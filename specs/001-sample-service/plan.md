@@ -95,7 +95,7 @@ sample-service를 생성하기 위한 agent execution flow와 handoff 규칙을 
 - stop / retry policy
 
 # 실행 규칙
-1. `agent.md`는 orchestration의 source of truth다.
+1. `plan.md`는 orchestration의 source of truth다.
 2. feedback loop는 `max_feedback_rounds` 범위 안에서만 반복할 수 있다.
 3. sample-service는 unresolved 이슈를 줄이는 방향으로 bounded feedback를 수행한다.
 4. docs는 실제 run command와 URL을 반영해야 한다.
