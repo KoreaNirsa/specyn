@@ -93,7 +93,7 @@ async def test_codex_runner_wraps_windows_shell_launcher(monkeypatch, tmp_path: 
         captured["args"] = args
         return _FakeProcess()
 
-    monkeypatch.setattr("app.services.codex_runner.os.name", "nt")
+    monkeypatch.setattr(runner, "_is_windows", lambda: True)
     monkeypatch.setattr("app.services.codex_runner.shutil.which", lambda binary: r"C:\Users\tester\AppData\Roaming\npm\codex.cmd")
     monkeypatch.setattr("asyncio.create_subprocess_exec", fake_create_subprocess_exec)
 

@@ -118,6 +118,52 @@ class TaskControllerTest {
     }
 
     @Test
+    void updateStatusNotFoundReturns404() throws Exception {
+        mockMvc.perform(patch("/api/v1/tasks/{id}/status", "00000000-0000-0000-0000-000000000001")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":\"DONE\"}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("TASK_NOT_FOUND"));
+    }
+
+    @Test
+    void createTaskTitleTooLongReturns400() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "title", "x".repeat(201),
+                                "description", "Too long"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("title must be at most 200 characters"));
+    }
+
+    @Test
+    void createTaskDescriptionTooLongReturns400() throws Exception {
+        mockMvc.perform(post("/api/v1/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "title", "Valid title",
+                                "description", "x".repeat(2001)
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("description must be at most 2000 characters"));
+    }
+
+    @Test
+    void updateStatusMalformedJsonReturns400() throws Exception {
+        String id = createTaskAndGetId();
+        mockMvc.perform(patch("/api/v1/tasks/{id}/status", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\":"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("Malformed JSON request"));
+    }
+
+    @Test
     void deleteThenGetReturns404() throws Exception {
         String id = createTaskAndGetId();
         mockMvc.perform(delete("/api/v1/tasks/{id}", id))
