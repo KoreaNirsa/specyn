@@ -21,15 +21,15 @@ Each feature directory may contain:
 
 When migrating existing specifications into Spec Kit layout, the body and front matter of existing specification files must not be changed or deleted. Rename and move operations are allowed only to align files with the feature-based layout.
 
-## Future Feature Slots
+## Active Feature Areas
 
 Future specifications should be added as independent feature directories instead of being mixed into existing feature bundles.
 
-Reserved future feature areas:
+Active feature areas:
 
-- dashboard design specification.
-- Grill Me review technique.
-- TDD workflow and specification refinement policy.
+- `specs/003-dashboard-design`: dashboard design specification.
+- `specs/004-grill-me`: Grill Me review technique.
+- `specs/005-tdd-workflow`: TDD workflow and specification refinement policy.
 
 ## TDD Gate
 
