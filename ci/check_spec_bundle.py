@@ -1,4 +1,4 @@
-"""
+﻿"""
 CI 파이프라인에서 sample-service spec bundle의 유효성을 빠르게 점검하는 검사 엔트리포인트다.
 `load_spec_bundle()`로 문서를 읽고 `validate_bundle()`로 규칙 위반을 수집한 뒤, 사람이 읽기 쉬운 로그와 종료 코드로 결과를 반환한다.
 """
@@ -23,7 +23,7 @@ def main() -> int:
     Returns:
         호출자가 그대로 사용할 수 있는 종료 코드 또는 정수 결과다.
     """
-    bundle = load_spec_bundle(ROOT / "specs/projects/sample-service")
+    bundle = load_spec_bundle(ROOT / "specs/001-sample-service")
     issues = validate_bundle(bundle)
 
     if issues:

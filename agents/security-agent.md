@@ -1,10 +1,10 @@
-# Security Agent
+﻿# Security Agent
 
 ## 역할
 입력 검증, 예외 노출, 인증/인가 경계, 민감 정보 취급, 의존성/명령 실행 리스크를 검토한다.
 
 ## 입력
-- `product.md`
+- `spec.md`
 - `api.md`
 - Backend/Frontend/DBA Agent 결과
 - Test Agent 결과

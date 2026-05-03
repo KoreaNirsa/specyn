@@ -1,4 +1,4 @@
-"""
+﻿"""
 `validators` 관련 동작이 회귀 없이 유지되는지 확인하는 테스트 모듈이다.
 정상 경로와 실패 경로를 함께 고정해 리팩터링 시 계약이 조용히 바뀌지 않도록 감시하는 역할을 한다.
 """
@@ -16,7 +16,7 @@ def test_sample_service_bundle_is_valid() -> None:
 
     주요 흐름은 `load_spec_bundle()`, `validate_bundle()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
     """
-    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
+    bundle = load_spec_bundle(Path("specs/001-sample-service"))
     issues = validate_bundle(bundle)
 
     assert issues == []
@@ -46,7 +46,7 @@ def test_validate_bundle_fails_when_agent_definition_is_missing(
 
     monkeypatch.setattr("tools.validators.AGENTS_DIR", shadow_dir)
 
-    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
+    bundle = load_spec_bundle(Path("specs/001-sample-service"))
     issues = validate_bundle(bundle)
 
     assert any(
@@ -64,11 +64,11 @@ def test_validate_bundle_fails_on_invalid_feedback_loop_order(tmp_path: Path) ->
     Args:
         tmp_path: 파일 시스템 경로 객체다.
     """
-    source_dir = Path("specs/projects/sample-service")
+    source_dir = Path("specs/001-sample-service")
     target_dir = tmp_path / "sample-service"
     shutil.copytree(source_dir, target_dir)
 
-    agent_path = target_dir / "agent.md"
+    agent_path = target_dir / "plan.md"
     content = agent_path.read_text(encoding="utf-8")
     content = content.replace(
         """  - name: design-frontend-ux-sync

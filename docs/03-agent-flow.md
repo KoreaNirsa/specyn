@@ -1,8 +1,8 @@
-# 03. Agent Flow
+﻿# 03. Agent Flow
 
 ## 기본 개념
 
-Specyn은 고정 파이프라인이 아니라 **`agent.md` 기반 실행 그래프**를 사용한다.
+Specyn은 고정 파이프라인이 아니라 **`plan.md` 기반 실행 그래프**를 사용한다.
 `execution_flow`는 기본 1차 실행 순서를, `feedback_loops`는 반복 협업이 필요한 Agent 재진입 순서를 정의한다.
 
 ```text

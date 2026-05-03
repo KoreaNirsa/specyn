@@ -1,4 +1,4 @@
-# 04. Codex Execution
+﻿# 04. Codex Execution
 
 Specyn의 Codex 실행 경로는 **`.env` 기반 인증 + Docker agent** 를 기본으로 사용합니다.
 
@@ -80,7 +80,7 @@ python specyn.py sample-up -d
 ```bash
 python specyn.py run \
   --backend-url http://localhost:8080 \
-  --spec-dir specs/projects/sample-service \
+  --spec-dir specs/001-sample-service \
   --project-id sample-service \
   --workspace .workspace/sample-service
 ```

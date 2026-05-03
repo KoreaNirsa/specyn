@@ -1,4 +1,4 @@
-"""
+﻿"""
 `specyn cli` 관련 동작이 회귀 없이 유지되는지 확인하는 테스트 모듈이다.
 정상 경로와 실패 경로를 함께 고정해 리팩터링 시 계약이 조용히 바뀌지 않도록 감시하는 역할을 한다.
 """
@@ -15,7 +15,7 @@ def test_cmd_run_local_returns_generated_file_summary(monkeypatch, capsys, tmp_p
     """
     회귀 테스트로서 `cmd_run_local_returns_generated_file_summary` 시나리오를 검증한다.
 
-    주요 흐름은 `type()`, `type('Args', (), {'spec_dir': 'specs/projects/sample-service', 'project_id': 'sample-service', 'workspace': '.workspace/sample-service', 'backend_url': None, 'rag_enabled': False, 'runtime': 'local'})()`, `cmd_run()`, `readouterr()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
+    주요 흐름은 `type()`, `type('Args', (), {'spec_dir': 'specs/001-sample-service', 'project_id': 'sample-service', 'workspace': '.workspace/sample-service', 'backend_url': None, 'rag_enabled': False, 'runtime': 'local'})()`, `cmd_run()`, `readouterr()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
 
     Args:
         monkeypatch: monkeypatch과(와) 관련된 입력값이다.
@@ -29,7 +29,7 @@ def test_cmd_run_local_returns_generated_file_summary(monkeypatch, capsys, tmp_p
     monkeypatch.setattr(specyn, "ROOT_DIR", tmp_path)
 
     args = type("Args", (), {
-        "spec_dir": "specs/projects/sample-service",
+        "spec_dir": "specs/001-sample-service",
         "project_id": "sample-service",
         "workspace": ".workspace/sample-service",
         "backend_url": None,

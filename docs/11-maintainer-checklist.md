@@ -1,4 +1,4 @@
-# 11. Maintainer Checklist
+﻿# 11. Maintainer Checklist
 
 오픈소스 AX Builder의 메인테이너 관점에서는 **새 기능 추가보다도 실행 안정성, 계약 호환성, 문서 일관성**이 더 중요하다.
 
@@ -16,8 +16,8 @@ spec/template change
 
 ## 1. 계약 호환성
 
-- `specs/templates`를 바꿨으면 `specs/projects/sample-service`도 같이 갱신했는가
-- `agent.md` metadata를 바꿨으면 Python/Backend validator가 함께 갱신되었는가
+- `specs/templates`를 바꿨으면 `specs/001-sample-service`도 같이 갱신했는가
+- `plan.md` metadata를 바꿨으면 Python/Backend validator가 함께 갱신되었는가
 - Prompt 계약을 바꿨으면 Agent 문서와 Prompt Builder가 같이 반영되었는가
 - 기존 사용자의 spec bundle이 불필요하게 깨지지 않는가
 

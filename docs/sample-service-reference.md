@@ -1,10 +1,10 @@
-# sample-service Reference
+﻿# sample-service Reference
 
 `sample-service` 는 Specyn의 실행 가능한 reference sample 입니다.
 
 ## Spec 위치
 
-- `specs/projects/sample-service/`
+- `specs/001-sample-service/`
 
 ## 생성 위치
 
@@ -22,8 +22,8 @@
 ## 실행 순서
 
 ```bash
-python specyn.py validate --spec-dir specs/projects/sample-service
-python specyn.py compile-prompts --spec-dir specs/projects/sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service
-python specyn.py run --spec-dir specs/projects/sample-service --project-id sample-service --workspace .workspace/sample-service
+python specyn.py validate --spec-dir specs/001-sample-service
+python specyn.py compile-prompts --spec-dir specs/001-sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service
+python specyn.py run --spec-dir specs/001-sample-service --project-id sample-service --workspace .workspace/sample-service
 python scripts/specyn_tasks.py sample-dev
 ```

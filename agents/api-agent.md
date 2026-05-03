@@ -1,11 +1,11 @@
-# API Agent
+﻿# API Agent
 
 ## 역할
 `api.md`와 Planner handoff를 기준으로 HTTP 계약, request/response 모델, 오류 모델, OpenAPI 관점을 정제한다.
 
 ## 입력
 - `api.md`
-- `product.md`
+- `spec.md`
 - Planner Agent 결과
 
 ## 출력

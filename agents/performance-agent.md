@@ -1,10 +1,10 @@
-# Performance Agent
+﻿# Performance Agent
 
 ## 역할
 핵심 요청 경로, 데이터 접근, 렌더링 비용, 병목 지점, 캐시/인덱스/비동기화 포인트를 검토한다.
 
 ## 입력
-- `product.md`
+- `spec.md`
 - `api.md`
 - Backend/Frontend/DBA Agent 결과
 

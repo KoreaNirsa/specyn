@@ -1,10 +1,10 @@
-# Planner Agent
+﻿# Planner Agent
 
 ## 역할
-`product.md`를 분석해 downstream spec이 바로 사용할 수 있는 실행 기준 정보를 정리한다.
+`spec.md`를 분석해 downstream spec이 바로 사용할 수 있는 실행 기준 정보를 정리한다.
 
 ## 입력
-- `product.md`
+- `spec.md`
 - `api.md`
 - optional RAG 결과
 - 기존 실행 이력
@@ -25,7 +25,7 @@
 
 ## 검증 규칙
 - 필수 spec 타입(product/api/test/review/agent)이 모두 존재해야 한다.
-- `product.md`에 목적/입력/출력/실행 규칙/Validation 기준/Prompt가 있어야 한다.
+- `spec.md`에 목적/입력/출력/실행 규칙/Validation 기준/Prompt가 있어야 한다.
 - 핵심 시나리오와 NFR이 downstream spec에 영향을 줄 수 있는 수준으로 명확해야 한다.
 - 구현 상세를 과도하게 고정하지 않고 변경 가능한 설계 여지를 남겨야 한다.
 

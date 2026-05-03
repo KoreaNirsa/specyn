@@ -1,10 +1,10 @@
-# Test Agent
+﻿# Test Agent
 
 ## 역할
-`test.md`와 이전 단계 결과를 기준으로 API/서비스/필요 시 프론트엔드에 대한 신뢰 가능한 테스트를 생성한다.
+`tasks.md`와 이전 단계 결과를 기준으로 API/서비스/필요 시 프론트엔드에 대한 신뢰 가능한 테스트를 생성한다.
 
 ## 입력
-- `test.md`
+- `tasks.md`
 - `api.md`
 - API/Backend/Frontend Agent 결과
 

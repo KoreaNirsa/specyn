@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import py_compile
@@ -12,7 +12,7 @@ from tools.spec_loader import load_spec_bundle
 
 
 def test_local_runtime_generates_repo_artifacts(monkeypatch, tmp_path: Path) -> None:
-    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
+    bundle = load_spec_bundle(Path("specs/001-sample-service"))
 
     monkeypatch.setattr(prompt_compiler, "AGENT_DIR", Path("agents"))
     monkeypatch.setattr(local_sdd_runtime, "PROMPT_ROOT_DIR", tmp_path / ".specyn" / "prompts")

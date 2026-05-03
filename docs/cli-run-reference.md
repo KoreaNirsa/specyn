@@ -1,4 +1,4 @@
-# CLI Run Reference
+﻿# CLI Run Reference
 
 ## `setup`
 
@@ -62,19 +62,19 @@ Starts and stops the sample-service stack.
 ## `validate`
 
 ```bash
-python specyn.py validate --spec-dir specs/projects/sample-service
+python specyn.py validate --spec-dir specs/001-sample-service
 ```
 
 ## `compile-prompts`
 
 ```bash
-python specyn.py compile-prompts --spec-dir specs/projects/sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service
+python specyn.py compile-prompts --spec-dir specs/001-sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service
 ```
 
 ## `run`
 
 ```bash
-python specyn.py run --spec-dir specs/projects/sample-service --project-id sample-service --workspace .workspace/sample-service
+python specyn.py run --spec-dir specs/001-sample-service --project-id sample-service --workspace .workspace/sample-service
 ```
 
 Generated output is written into local project/workspace paths, not meant to be blindly committed.

@@ -1,4 +1,4 @@
-"""
+﻿"""
 spec 문서와 spec bundle 전체를 계약에 맞춰 검증하는 정적 검사 모듈이다.
 문서 단위 형상 검증과 번들 단위 의존성·agent flow·feedback metadata 검증을 나눠 수행해, 실행 전에 구조적 오류를 가능한 빨리 드러내는 역할을 한다.
 """
@@ -375,7 +375,7 @@ def _validate_agent_definitions(agent_names: set[str]) -> list[ValidationIssue]:
     for agent_name in sorted(agent_names):
         definition_path = agent_definition_path(agent_name)
         if not definition_path.exists():
-            issues.append(ValidationIssue("ERROR", "MISSING_AGENT_DEFINITION", f"agent.md: agent 정의 문서가 없습니다. expected='{definition_path.relative_to(AGENTS_DIR.parent)}'"))
+            issues.append(ValidationIssue("ERROR", "MISSING_AGENT_DEFINITION", f"plan.md: agent 정의 문서가 없습니다. expected='{definition_path.relative_to(AGENTS_DIR.parent)}'"))
     return issues
 
 
@@ -400,19 +400,19 @@ def _validate_feedback_metadata(*, agent_document: SpecDocument, execution_flow:
     metadata = agent_document.metadata
     max_feedback_rounds = metadata.get("max_feedback_rounds")
     if max_feedback_rounds is not None and not _is_non_negative_int(max_feedback_rounds):
-        issues.append(ValidationIssue("ERROR", "INVALID_MAX_FEEDBACK_ROUNDS", "agent.md: max_feedback_rounds는 0 이상의 정수여야 합니다."))
+        issues.append(ValidationIssue("ERROR", "INVALID_MAX_FEEDBACK_ROUNDS", "plan.md: max_feedback_rounds는 0 이상의 정수여야 합니다."))
 
     raw_feedback_loops = metadata.get("feedback_loops")
     if raw_feedback_loops is None:
         return issues
     if not isinstance(raw_feedback_loops, list):
-        issues.append(ValidationIssue("ERROR", "INVALID_FEEDBACK_LOOPS_TYPE", "agent.md: feedback_loops는 배열이어야 합니다."))
+        issues.append(ValidationIssue("ERROR", "INVALID_FEEDBACK_LOOPS_TYPE", "plan.md: feedback_loops는 배열이어야 합니다."))
         return issues
 
     execution_index = {agent_name: index for index, agent_name in enumerate(execution_flow)}
     supported_set = set(supported_agents) | set(optional_agents) | set(execution_flow)
     for index, loop in enumerate(raw_feedback_loops, start=1):
-        prefix = f"agent.md: feedback_loops[{index}]"
+        prefix = f"plan.md: feedback_loops[{index}]"
         if not isinstance(loop, dict):
             issues.append(ValidationIssue("ERROR", "INVALID_FEEDBACK_LOOP", f"{prefix}는 객체여야 합니다."))
             continue
@@ -481,31 +481,31 @@ def _validate_agent_flow(bundle: dict[str, SpecDocument]) -> list[ValidationIssu
     optional_agents = flow.optional_agents
     supported_agents = flow.supported_agents
     if not execution_flow:
-        issues.append(ValidationIssue("ERROR", "EMPTY_AGENT_FLOW", "agent.md: execution_flow가 비어 있습니다."))
+        issues.append(ValidationIssue("ERROR", "EMPTY_AGENT_FLOW", "plan.md: execution_flow가 비어 있습니다."))
         return issues
 
     seen: set[str] = set()
     for agent_name in execution_flow:
         if agent_name not in KNOWN_AGENT_NAMES:
-            issues.append(ValidationIssue("ERROR", "UNKNOWN_AGENT", f"agent.md: 지원하지 않는 agent '{agent_name}' 이(가) execution_flow에 있습니다."))
+            issues.append(ValidationIssue("ERROR", "UNKNOWN_AGENT", f"plan.md: 지원하지 않는 agent '{agent_name}' 이(가) execution_flow에 있습니다."))
         if agent_name in seen:
-            issues.append(ValidationIssue("ERROR", "DUPLICATED_AGENT_IN_FLOW", f"agent.md: execution_flow에 '{agent_name}' 가 중복 선언되었습니다."))
+            issues.append(ValidationIssue("ERROR", "DUPLICATED_AGENT_IN_FLOW", f"plan.md: execution_flow에 '{agent_name}' 가 중복 선언되었습니다."))
         seen.add(agent_name)
 
     missing_required_agents = REQUIRED_FLOW_AGENTS - set(execution_flow)
     for agent_name in sorted(missing_required_agents):
-        issues.append(ValidationIssue("ERROR", "MISSING_REQUIRED_AGENT", f"agent.md: execution_flow에 필수 agent '{agent_name}' 이(가) 없습니다."))
+        issues.append(ValidationIssue("ERROR", "MISSING_REQUIRED_AGENT", f"plan.md: execution_flow에 필수 agent '{agent_name}' 이(가) 없습니다."))
 
     for collection_name, values in {"optional_agents": optional_agents, "supported_agents": supported_agents}.items():
         for agent_name in values:
             if agent_name not in KNOWN_AGENT_NAMES:
-                issues.append(ValidationIssue("ERROR", "UNKNOWN_AGENT", f"agent.md: {collection_name}에 지원하지 않는 agent '{agent_name}' 이(가) 있습니다."))
+                issues.append(ValidationIssue("ERROR", "UNKNOWN_AGENT", f"plan.md: {collection_name}에 지원하지 않는 agent '{agent_name}' 이(가) 있습니다."))
 
     if supported_agents:
         for agent_name in [agent for agent in execution_flow if agent not in supported_agents]:
-            issues.append(ValidationIssue("ERROR", "FLOW_NOT_IN_SUPPORTED_AGENTS", f"agent.md: execution_flow의 '{agent_name}' 는 supported_agents에 포함되어야 합니다."))
+            issues.append(ValidationIssue("ERROR", "FLOW_NOT_IN_SUPPORTED_AGENTS", f"plan.md: execution_flow의 '{agent_name}' 는 supported_agents에 포함되어야 합니다."))
         for agent_name in [agent for agent in optional_agents if agent not in supported_agents]:
-            issues.append(ValidationIssue("ERROR", "OPTIONAL_AGENT_NOT_IN_SUPPORTED_AGENTS", f"agent.md: optional_agents의 '{agent_name}' 는 supported_agents에 포함되어야 합니다."))
+            issues.append(ValidationIssue("ERROR", "OPTIONAL_AGENT_NOT_IN_SUPPORTED_AGENTS", f"plan.md: optional_agents의 '{agent_name}' 는 supported_agents에 포함되어야 합니다."))
 
     issues.extend(_validate_feedback_metadata(agent_document=agent_document, execution_flow=execution_flow, optional_agents=optional_agents, supported_agents=supported_agents))
     referenced_agents = set(execution_flow) | set(optional_agents) | set(supported_agents)

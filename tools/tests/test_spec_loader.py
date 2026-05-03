@@ -1,4 +1,4 @@
-"""
+﻿"""
 `spec loader` 관련 동작이 회귀 없이 유지되는지 확인하는 테스트 모듈이다.
 정상 경로와 실패 경로를 함께 고정해 리팩터링 시 계약이 조용히 바뀌지 않도록 감시하는 역할을 한다.
 """
@@ -16,7 +16,7 @@ def test_load_spec_bundle() -> None:
 
     주요 흐름은 `load_spec_bundle()`, `keys()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
     """
-    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
+    bundle = load_spec_bundle(Path("specs/001-sample-service"))
 
     assert set(bundle.keys()) == {"product", "api", "test", "review", "agent"}
     assert bundle["product"].metadata["owner_agent"] == "planner"
@@ -31,8 +31,8 @@ def test_load_spec_bundle_raises_on_duplicate_type(tmp_path: Path) -> None:
     Args:
         tmp_path: 파일 시스템 경로 객체다.
     """
-    first = tmp_path / "product.md"
-    second = tmp_path / "another-product.md"
+    first = tmp_path / "spec.md"
+    second = tmp_path / "another-spec.md"
 
     body = """---
 id: sample-product

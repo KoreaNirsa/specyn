@@ -1,4 +1,4 @@
-"""
+﻿"""
 로컬 개발과 CI 보조 작업을 하나의 CLI로 묶은 태스크 러너 모듈이다.
 가상환경 준비, 프런트엔드/백엔드 실행, 샘플 프로젝트 생성 여부 확인, Docker·Gradle·npm 의존성 점검까지 개발 편의성에 필요한 절차를 단계별 함수로 나눠 제공한다.
 """
@@ -442,7 +442,7 @@ def ensure_sample_runtime_generated() -> None:
     run_specyn([
         "run",
         "--spec-dir",
-        "specs/projects/sample-service",
+        "specs/001-sample-service",
         "--project-id",
         "sample-service",
         "--workspace",
@@ -978,7 +978,7 @@ def task_validate_spec() -> None:
 
     주요 흐름은 `run_specyn()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
     """
-    run_specyn(["validate", "--spec-dir", "specs/projects/sample-service"])
+    run_specyn(["validate", "--spec-dir", "specs/001-sample-service"])
 
 
 def task_init_spec() -> None:
@@ -987,7 +987,7 @@ def task_init_spec() -> None:
 
     주요 흐름은 `run_specyn()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
     """
-    run_specyn(["init-spec", "--project-id", "sample-service", "--output-dir", "specs/projects/sample-service"])
+    run_specyn(["init-spec", "--project-id", "sample-service", "--output-dir", "specs/001-sample-service"])
 
 
 def task_compile_prompts() -> None:
@@ -996,7 +996,7 @@ def task_compile_prompts() -> None:
 
     주요 흐름은 `run_specyn()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
     """
-    run_specyn(["compile-prompts", "--spec-dir", "specs/projects/sample-service", "--output-dir", ".specyn/prompts/sample-service", "--workspace", ".workspace/sample-service"])
+    run_specyn(["compile-prompts", "--spec-dir", "specs/001-sample-service", "--output-dir", ".specyn/prompts/sample-service", "--workspace", ".workspace/sample-service"])
 
 
 def task_run_sim() -> None:
@@ -1005,7 +1005,7 @@ def task_run_sim() -> None:
 
     주요 흐름은 `run_specyn()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
     """
-    run_specyn(["run", "--spec-dir", "specs/projects/sample-service", "--workspace", ".workspace/sample-service", "--runtime", "simulate"])
+    run_specyn(["run", "--spec-dir", "specs/001-sample-service", "--workspace", ".workspace/sample-service", "--runtime", "simulate"])
 
 
 def task_run_example() -> None:
@@ -1014,7 +1014,7 @@ def task_run_example() -> None:
 
     주요 흐름은 `run_specyn()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
     """
-    run_specyn(["run", "--spec-dir", "specs/projects/sample-service", "--backend-url", "http://localhost:8180", "--workspace", ".workspace/sample-service"])
+    run_specyn(["run", "--spec-dir", "specs/001-sample-service", "--backend-url", "http://localhost:8180", "--workspace", ".workspace/sample-service"])
 
 
 def task_sample_flow() -> None:
@@ -1025,7 +1025,7 @@ def task_sample_flow() -> None:
     """
     task_validate_spec()
     task_compile_prompts()
-    run_specyn(["run", "--spec-dir", "specs/projects/sample-service", "--project-id", "sample-service", "--workspace", ".workspace/sample-service"])
+    run_specyn(["run", "--spec-dir", "specs/001-sample-service", "--project-id", "sample-service", "--workspace", ".workspace/sample-service"])
 
 
 def task_test_python() -> None:

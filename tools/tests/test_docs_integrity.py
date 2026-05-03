@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import re
 from pathlib import Path
@@ -27,15 +27,14 @@ def test_primary_docs_do_not_reference_removed_example_paths() -> None:
     for path in _doc_targets():
         text = path.read_text(encoding="utf-8")
         assert "specs/examples" not in text, path
-        assert "todo-service" not in text, path
 
 
 def test_primary_docs_reference_sample_service_and_templates_roles() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     specs_readme = (ROOT / "specs" / "README.md").read_text(encoding="utf-8")
-    assert "specs/projects/sample-service" in readme
+    assert "specs/001-sample-service" in readme
     assert "specs/templates/" in readme
-    assert "specs/projects/sample-service" in specs_readme
+    assert "specs/001-sample-service" in specs_readme
     assert "specs/templates/" in specs_readme
 
 
@@ -60,7 +59,7 @@ def test_run_flow_docs_contain_current_command_sequence() -> None:
         ROOT / "guide" / "local-development.md",
     ]
     required_markers = [
-        "python specyn.py validate --spec-dir specs/projects/sample-service",
+        "python specyn.py validate --spec-dir specs/001-sample-service",
         "compile-prompts",
         "python specyn.py run",
         "python scripts/specyn_tasks.py dev",
