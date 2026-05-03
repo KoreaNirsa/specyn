@@ -66,3 +66,42 @@ text
 
     with pytest.raises(ValueError):
         load_spec_bundle(tmp_path)
+
+
+def test_load_spec_bundle_reads_markdown_extension_case_insensitively(tmp_path: Path) -> None:
+    spec_path = tmp_path / "Design.MD"
+    spec_path.write_text(
+        """---
+id: sample-design
+type: design
+version: 1.0.0
+owner_agent: design
+status: draft
+depends_on: []
+---
+
+# 목적
+text
+# 입력
+text
+# 출력
+text
+# 실행 규칙
+text
+# Validation 기준
+text
+# Prompt
+## Role
+text
+## Instructions
+text
+## Format
+text
+""",
+        encoding="utf-8",
+    )
+
+    bundle = load_spec_bundle(tmp_path)
+
+    assert set(bundle.keys()) == {"design"}
+    assert bundle["design"].name == "Design.MD"
