@@ -30,3 +30,15 @@ Reserved future feature areas:
 - dashboard design specification.
 - Grill Me review technique.
 - TDD workflow and specification refinement policy.
+
+## TDD Gate
+
+All future implementation work must follow a TDD flow:
+
+1. Define the failing test or validation command before implementation.
+2. Confirm the failure or document why the failure cannot be executed.
+3. Implement the smallest scoped change that satisfies the spec.
+4. Re-run the same validation command and record the result.
+5. Refactor only after the validation passes.
+
+Work without TDD evidence must remain blocked unless the active spec explicitly records the reason and alternate validation method.
