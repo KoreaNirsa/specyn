@@ -1,4 +1,4 @@
-# 🏛 Specyn 거버넌스
+﻿# 🏛 Specyn 거버넌스
 
 이 문서는 Specyn 저장소를 공개 오픈소스로 운영할 때 **누가 어떻게 결정하고, 어떤 변경이 어떤 절차를 거치는지**를 설명합니다.
 
@@ -40,7 +40,7 @@ Specyn은 단순한 코드 저장소보다 **오픈 SDD 프레임워크**에 가
 
 아래는 이슈 또는 Discussion 성격의 사전 논의를 권장합니다.
 
-- `agent.md` 구조 변경
+- `plan.md` 구조 변경
 - spec schema / validator 규칙 변경
 - local runtime / Codex runtime 계약 변경
 - sample-service 기준 흐름을 깨는 UX/API 변경
@@ -76,9 +76,9 @@ Specyn은 단순한 코드 저장소보다 **오픈 SDD 프레임워크**에 가
 
 최소한 아래가 유지되어야 합니다.
 
-- `python specyn.py validate --spec-dir specs/projects/sample-service`
-- `python specyn.py compile-prompts --spec-dir specs/projects/sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service`
-- `python specyn.py run --spec-dir specs/projects/sample-service --project-id sample-service --workspace .workspace/sample-service`
+- `python specyn.py validate --spec-dir specs/001-sample-service`
+- `python specyn.py compile-prompts --spec-dir specs/001-sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service`
+- `python specyn.py run --spec-dir specs/001-sample-service --project-id sample-service --workspace .workspace/sample-service`
 - `pytest -q`
 - 문서 링크와 quickstart 흐름 점검
 

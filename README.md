@@ -1,6 +1,5 @@
+﻿# Specyn
 <img width="100%" height="600" alt="specyn-logo" src="https://github.com/user-attachments/assets/1cb4ea88-b113-4cf0-8592-d88c73db9830" />
-
-# Specyn
 
 Specyn is a Spec Driven Development workspace that connects spec bundles, agent execution, generated code, runtime verification, and a dashboard UI.
 
@@ -14,7 +13,7 @@ The default operating model is:
 Spec locations:
 
 - `specs/templates/` for new bundle templates
-- `specs/projects/sample-service/` for the reference sample bundle used by `validate`, `compile-prompts`, and `run`
+- `specs/001-sample-service/` for the reference sample bundle used by `validate`, `compile-prompts`, and `run`
 
 ## Prerequisites
 
@@ -109,9 +108,9 @@ Initial users should be careful about local auth artifacts.
 If you want to run the pipeline without the dashboard:
 
 ```bash
-python specyn.py validate --spec-dir specs/projects/sample-service
-python specyn.py compile-prompts --spec-dir specs/projects/sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service
-python specyn.py run --spec-dir specs/projects/sample-service --project-id sample-service --workspace .workspace/sample-service
+python specyn.py validate --spec-dir specs/001-sample-service
+python specyn.py compile-prompts --spec-dir specs/001-sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service
+python specyn.py run --spec-dir specs/001-sample-service --project-id sample-service --workspace .workspace/sample-service
 ```
 
 Host-based helper modes:

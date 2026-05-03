@@ -139,7 +139,12 @@ def load_spec_bundle(spec_dir: Path) -> dict[str, SpecDocument]:
 
     bundle: dict[str, SpecDocument] = {}
     duplicates: list[str] = []
-    for path in sorted(spec_dir.glob("*.md")):
+    markdown_files = [
+        path
+        for path in spec_dir.iterdir()
+        if path.is_file() and path.suffix.lower() == ".md"
+    ]
+    for path in sorted(markdown_files):
         document = load_spec_file(path)
         if document.spec_type in bundle:
             duplicates.append(document.spec_type)

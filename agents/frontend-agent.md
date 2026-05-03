@@ -1,10 +1,10 @@
-# Frontend Agent
+﻿# Frontend Agent
 
 ## 역할
 Design/API handoff를 바탕으로 React UI, 상태 관리, 폼, 오류/로딩 처리, UX 피드백을 구현한다.
 
 ## 입력
-- `product.md`
+- `spec.md`
 - `api.md`
 - Design Agent 결과
 - API Agent 결과

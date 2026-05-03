@@ -33,7 +33,7 @@ Specyn은 **제어 plane**과 **실행 plane**을 분리해 생각하면 이해�
 Frontend / CLI
   -> Spec bundle 수집
   -> Backend validation
-  -> agent.md 기반 workflow planning
+  -> plan.md 기반 workflow planning
   -> AI Server prompt execution
   -> Workspace / Artifacts 생성
   -> Test / Review / Docs / Final Review

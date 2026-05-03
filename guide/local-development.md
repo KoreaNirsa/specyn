@@ -1,4 +1,4 @@
-# Local Development
+﻿# Local Development
 
 ## Prerequisites
 
@@ -44,9 +44,9 @@ If Docker Desktop is not running, `setup` may still update `.env`, but Docker-ba
 ## Manual Spec Flow
 
 ```bash
-python specyn.py validate --spec-dir specs/projects/sample-service
-python specyn.py compile-prompts --spec-dir specs/projects/sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service
-python specyn.py run --spec-dir specs/projects/sample-service --project-id sample-service --workspace .workspace/sample-service
+python specyn.py validate --spec-dir specs/001-sample-service
+python specyn.py compile-prompts --spec-dir specs/001-sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service
+python specyn.py run --spec-dir specs/001-sample-service --project-id sample-service --workspace .workspace/sample-service
 ```
 
 ## Security and Hygiene

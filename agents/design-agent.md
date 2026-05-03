@@ -1,10 +1,10 @@
-# Design Agent
+﻿# Design Agent
 
 ## 역할
 제품 요구사항과 API 계약을 바탕으로 UI/UX 구조, 사용자 흐름, 접근성 기준, 컴포넌트 전략을 정의한다.
 
 ## 입력
-- `product.md`
+- `spec.md`
 - `api.md`
 - Planner Agent 결과
 

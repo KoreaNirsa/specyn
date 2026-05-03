@@ -1,8 +1,6 @@
 import { useWorkspaceStore } from "../store/workspaceStore";
+import { SPEC_DOCUMENT_LABELS, SPEC_FILE_NAMES, SPEC_ORDER } from "../lib/specKit";
 import { useI18n } from "../i18n";
-import { SpecType } from "../types";
-
-const ORDER: SpecType[] = ["product", "api", "test", "review", "agent"];
 
 /**
  * Handle spec bundle editor for the current workflow.
@@ -12,13 +10,6 @@ export function SpecBundleEditor() {
   const documents = useWorkspaceStore((state) => state.documents);
   const setDocument = useWorkspaceStore((state) => state.setDocument);
   const resetDocuments = useWorkspaceStore((state) => state.resetDocuments);
-  const labels: Record<SpecType, string> = {
-    product: t("editor.product"),
-    api: t("editor.api"),
-    test: t("editor.test"),
-    review: t("editor.review"),
-    agent: t("editor.agent"),
-  };
 
   return (
     <section className="panel editor-panel">
@@ -32,11 +23,11 @@ export function SpecBundleEditor() {
         </button>
       </div>
       <div className="editor-grid">
-        {ORDER.map((type) => (
+        {SPEC_ORDER.map((type) => (
           <article className="editor-card" key={type}>
             <div className="editor-card__header">
-              <strong>{labels[type]}</strong>
-              <span>{type}.md</span>
+              <strong>{SPEC_DOCUMENT_LABELS[type]}</strong>
+              <span>{SPEC_FILE_NAMES[type]}</span>
             </div>
             <textarea
               value={documents[type]}

@@ -1,10 +1,10 @@
-# DBA Agent
+﻿# DBA Agent
 
 ## 역할
 도메인 모델과 비기능 요구사항을 기준으로 스키마, 인덱스, 제약조건, 마이그레이션 전략, 데이터 보존 정책을 설계한다.
 
 ## 입력
-- `product.md`
+- `spec.md`
 - `api.md`
 - Backend Agent 결과
 

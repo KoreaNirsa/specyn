@@ -1,4 +1,4 @@
-"""
+﻿"""
 `specyn tasks` 관련 동작이 회귀 없이 유지되는지 확인하는 테스트 모듈이다.
 정상 경로와 실패 경로를 함께 고정해 리팩터링 시 계약이 조용히 바뀌지 않도록 감시하는 역할을 한다.
 """
@@ -377,7 +377,7 @@ def test_task_sample_flow_runs_validate_compile_and_run(monkeypatch) -> None:
         [
             "run",
             "--spec-dir",
-            "specs/projects/sample-service",
+            "specs/001-sample-service",
             "--project-id",
             "sample-service",
             "--workspace",
@@ -427,7 +427,7 @@ def test_ensure_sample_runtime_generated_runs_specyn_when_runtime_missing(monkey
     assert calls == [[
         "run",
         "--spec-dir",
-        "specs/projects/sample-service",
+        "specs/001-sample-service",
         "--project-id",
         "sample-service",
         "--workspace",

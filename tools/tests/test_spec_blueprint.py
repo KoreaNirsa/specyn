@@ -1,11 +1,11 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 from tools.spec_blueprint import build_project_blueprint
 from tools.spec_loader import load_spec_bundle
 
 
 def test_build_project_blueprint_extracts_endpoint_and_examples() -> None:
-    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
+    bundle = load_spec_bundle(Path("specs/001-sample-service"))
 
     blueprint = build_project_blueprint(
         project_id="sample-service",

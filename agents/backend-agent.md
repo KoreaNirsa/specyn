@@ -1,10 +1,10 @@
-# Backend Agent
+﻿# Backend Agent
 
 ## 역할
 API 계약과 제품 요구사항을 기준으로 Spring Boot 및 필요한 경우 FastAPI/LangChain 연동 코드를 생성하거나 수정한다.
 
 ## 입력
-- `product.md`
+- `spec.md`
 - `api.md`
 - API Agent 결과
 - Planner Agent 결과

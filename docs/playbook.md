@@ -1,4 +1,4 @@
-# Playbook
+﻿# Playbook
 
 ## 권장 순서
 
@@ -14,9 +14,9 @@ Docker Desktop 이 꺼져 있으면 1단계에서 `.env` 저장까지 먼저 끝
 
 ### 수동 spec 검증 경로
 
-1. `python specyn.py validate --spec-dir specs/projects/sample-service`
-2. `python specyn.py compile-prompts --spec-dir specs/projects/sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service`
-3. `python specyn.py run --spec-dir specs/projects/sample-service --project-id sample-service --workspace .workspace/sample-service`
+1. `python specyn.py validate --spec-dir specs/001-sample-service`
+2. `python specyn.py compile-prompts --spec-dir specs/001-sample-service --output-dir .specyn/prompts/sample-service --workspace .workspace/sample-service`
+3. `python specyn.py run --spec-dir specs/001-sample-service --project-id sample-service --workspace .workspace/sample-service`
 4. `python scripts/specyn_tasks.py dev`
 5. `python scripts/specyn_tasks.py sample-dev`
 

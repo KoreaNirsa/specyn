@@ -1,4 +1,4 @@
-# agents
+﻿# agents
 
 Specyn의 Agent 정의는 코드와 분리된 Markdown 문서로 관리한다.
 
@@ -38,7 +38,7 @@ Specyn의 Agent 정의는 코드와 분리된 Markdown 문서로 관리한다.
 - 다음 agent가 바로 사용할 수 있는 산출물 중심으로 작성
 - TODO 대신 가정(`ASSUMPTION:`)과 리스크(`RISK:`)를 명시
 - validation 기준과 stop 조건을 각 agent 문서에 포함
-- `agent.md`의 `execution_flow`가 기본 실행 순서를 결정
-- `agent.md`의 `feedback_loops`와 `max_feedback_rounds`가 bounded 반복 협업을 결정
+- `plan.md`의 `execution_flow`가 기본 실행 순서를 결정
+- `plan.md`의 `feedback_loops`와 `max_feedback_rounds`가 bounded 반복 협업을 결정
 - 동일 Agent 재실행 시에는 feedback round 원칙을 따른다
 - 가능하면 `STEP_LABEL / PHASE / FEEDBACK_ROUND / STATUS / CHANGED_FILES / NEXT_HANDOFF` trace metadata를 남긴다

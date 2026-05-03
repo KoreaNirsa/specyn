@@ -39,7 +39,7 @@ PHASE: feedback
 FEEDBACK_ROUND: 1
 STATUS: done
 CHANGED_FILES:
-- specs/projects/sample/api.md
+- specs/001-sample-service/api.md
 RESOLVED:
 - createUser 응답 모델 필드명을 userId로 통일
 UNRESOLVED:

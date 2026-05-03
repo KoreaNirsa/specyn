@@ -1,4 +1,4 @@
-# 🛡 메인테이너 가이드
+﻿# 🛡 메인테이너 가이드
 
 이 문서는 저장소를 유지보수하는 관점에서 **무엇을 바꾸면 어디까지 같이 확인해야 하는지**를 정리합니다.
 
@@ -6,7 +6,7 @@
 
 | 변경한 것 | 함께 확인할 것 |
 |---|---|
-| `specs/templates` | `specs/projects/sample-service`, validator, docs |
+| `specs/templates` | `specs/001-sample-service`, validator, docs |
 | `agents/*.md` | prompt compiler, 실행 흐름 문서, 예제 bundle |
 | `scripts/`, `specyn.py` | README 명령어, docs/quickstart, Windows/Linux 예시 |
 | `backend/` | workflow backend job, API 문서, health check |
@@ -19,7 +19,7 @@
 1. `bootstrap -> doctor -> sample-flow -> dev` 흐름 확인
 2. `make ci-local` 또는 `python scripts/specyn_tasks.py ci-local` 실행
 3. docs 링크/이미지 경로 확인
-4. `specs/projects/sample-service` 기준 generated 결과 확인
+4. `specs/001-sample-service` 기준 generated 결과 확인
 5. workflow 영향도 확인
 
 ## 3. 문서 동기화 원칙

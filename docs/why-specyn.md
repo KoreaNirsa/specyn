@@ -1,4 +1,4 @@
-# 💡 왜 Specyn인가요?
+﻿# 💡 왜 Specyn인가요?
 
 이 문서는 “왜 또 다른 AI 개발 도구가 필요한가요?”라는 질문에 답합니다.
 
@@ -19,17 +19,17 @@ Specyn은 이 지점을 **spec bundle + agent flow + generated artifacts + run t
 
 코드보다 spec bundle을 먼저 둡니다.
 
-- `product.md`
+- `spec.md`
 - `api.md`
-- `test.md`
+- `tasks.md`
 - `review.md`
-- `agent.md`
+- `plan.md`
 
 즉, “무엇을 만들지”와 “어떤 기준으로 통과시킬지”를 먼저 문서화합니다.
 
 ### agent-visible
 
-누가 어떤 순서로 참여하는지 `agent.md` 에서 보입니다.
+누가 어떤 순서로 참여하는지 `plan.md` 에서 보입니다.
 
 ```text
 planner -> design -> api -> backend -> frontend -> ... -> final-review

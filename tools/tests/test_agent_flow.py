@@ -1,4 +1,4 @@
-"""
+﻿"""
 `agent flow` 관련 동작이 회귀 없이 유지되는지 확인하는 테스트 모듈이다.
 정상 경로와 실패 경로를 함께 고정해 리팩터링 시 계약이 조용히 바뀌지 않도록 감시하는 역할을 한다.
 """
@@ -15,7 +15,7 @@ def test_resolve_agent_flow_uses_agent_spec_execution_flow() -> None:
 
     주요 흐름은 `load_spec_bundle()`, `resolve_agent_flow()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
     """
-    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
+    bundle = load_spec_bundle(Path("specs/001-sample-service"))
 
     flow = resolve_agent_flow(bundle, rag_enabled=False)
 
@@ -50,7 +50,7 @@ def test_resolve_agent_flow_inserts_rag_after_planner_when_enabled() -> None:
 
     주요 흐름은 `load_spec_bundle()`, `resolve_agent_flow()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
     """
-    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
+    bundle = load_spec_bundle(Path("specs/001-sample-service"))
 
     flow = resolve_agent_flow(bundle, rag_enabled=True)
 
@@ -63,7 +63,7 @@ def test_build_execution_plan_expands_bounded_feedback_loops() -> None:
 
     주요 흐름은 `load_spec_bundle()`, `build_execution_plan()`를 차례로 사용해 입력을 정리하고 결과를 조립하는 것이다.
     """
-    bundle = load_spec_bundle(Path("specs/projects/sample-service"))
+    bundle = load_spec_bundle(Path("specs/001-sample-service"))
 
     execution_plan = build_execution_plan(bundle, rag_enabled=False)
     labels = [step.label for step in execution_plan]

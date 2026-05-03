@@ -710,7 +710,7 @@ def _build_project_readme(project_id: str) -> str:
         f"""
         # {project_id}
 
-        이 디렉터리는 `python specyn.py run --spec-dir specs/projects/{project_id} --project-id {project_id}` 실행으로
+        이 디렉터리는 `python specyn.py run --spec-dir specs/<number>-{project_id} --project-id {project_id}` 실행으로
         생성되는 실제 프로젝트 런타임입니다.
 
         ## 실행 포트
